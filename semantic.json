@@ -1,0 +1,33 @@
+{
+  "base": "vendor/semantic/",
+  "paths": {
+    "source": {
+      "config": "src/theme.config",
+      "definitions": "src/definitions/",
+      "site": "src/site/",
+      "themes": "src/themes/"
+    },
+    "output": {
+      "packaged": "../../static/semantic/",
+      "uncompressed": "../../static/semantic/components/",
+      "compressed": "../../static/semantic/components/",
+      "themes": "../../static/semantic/themes/"
+    },
+    "clean": "dist/"
+  },
+  "permission": false,
+  "rtl": "No",
+  "components": [
+    "button",
+    "divider",
+    "list",
+    "segment",
+    "breadcrumb",
+    "checkbox",
+    "dropdown",
+    "transition",
+    "icon",
+    "label"
+  ],
+  "version": "2.1.8"
+}

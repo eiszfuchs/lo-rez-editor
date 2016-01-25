@@ -1,0 +1,272 @@
+@dividerColor: #dedede;
+@activeColor: #03a9f4; // Material
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.clearfix {
+    &:after {
+        content: "";
+        clear: both;
+        display: block;
+    }
+}
+
+.transparency {
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAHWlUWHRDb21tZW50AAAAAABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAArSURBVDjLY6ytrf3PgAeYmZnhk2ZgYqAQjBowGAxgIRTPp06dGg3E4W8AAIWABjoKHAS3AAAAAElFTkSuQmCC");
+    background-repeat: repeat;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+
+    position: relative;
+
+    font-family: sans-serif;
+    font-size: 12px;
+    line-height: 1.4rem;
+}
+
+body {
+    display: flex;
+}
+
+aside, main {
+    flex: 1;
+    height: 100%;
+    position: relative;
+}
+
+aside {
+    max-width: 320px;
+    border-right: 1px solid @dividerColor;
+
+    form {
+        padding: 5px;
+        background-color: #ffffff;
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+
+        z-index: 1;
+
+        border-bottom: 1px solid @dividerColor;
+    }
+}
+
+#files {
+    overflow: auto;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin-top: 0;
+    padding: 50px 5px 5px;
+
+    .item {
+        cursor: default;
+
+        .content {
+           cursor: pointer;
+       }
+
+       &:hover {
+           .content {
+               color: @activeColor;
+           }
+       }
+    }
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+
+    nav {
+        flex: 0 1 auto;
+
+        display: flex;
+        width: 100%;
+        border-bottom: 1px solid @dividerColor;
+
+        a {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            position: relative;
+            padding: 10px 20px 10px 5px;
+
+            cursor: default;
+
+            &.active {
+                font-weight: bold;
+            }
+
+            &:not(:first-child) {
+                border-left: 1px solid @dividerColor;
+            }
+
+            .close {
+                position: absolute;
+                right: 0;
+                top: calc(50% - 5px);
+                transform: translateY(-50%);
+
+                cursor: pointer;
+
+                &:hover {
+                    color: @activeColor;
+                }
+            }
+        }
+    }
+
+    article {
+        flex: 1 1 0%;
+        position: relative;
+
+        .clearfix;
+
+        padding: 5px 5px 5px;
+        overflow: auto;
+
+        &:not(.active) {
+            display: none;
+        }
+    }
+}
+
+.source, .editor {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+
+    display: block;
+    position: relative;
+    border: none;
+
+    cursor: crosshair;
+
+    margin: 0 auto 25px;
+}
+
+.palette li, .source, .editor, .previews {
+    image-rendering: pixelated;
+
+    .transparency;
+}
+
+.hotkeys {
+    margin: 10px 0 0;
+
+    .label {
+        .detail {
+            position: relative;
+
+            &::before {
+                content: "";
+                border-left: 1px solid white;
+
+                position: absolute;
+                top: -0.6em;
+                bottom: -0.6em;
+                left: -0.5em;
+            }
+        }
+    }
+}
+
+.editor {
+    width: 160px;
+    height: 160px;
+
+    .row {
+        &:after {
+            content: "";
+            clear: both;
+            display: block;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            float: left;
+
+            &:hover {
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            }
+        }
+    }
+}
+
+.palette {
+    .clearfix;
+
+    li {
+        list-style: none;
+        display: block;
+        float: left;
+        margin: 2px;
+        width: 20px;
+        height: 20px;
+
+        position: relative;
+        top: 0;
+
+        cursor: pointer;
+
+        border: 2px solid #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+        transition: border-color 200ms, box-shadow 200ms, top 200ms;
+
+        &:hover, &.picked {
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            border-color: mix(@activeColor, #fff);
+        }
+
+        &.picked {
+            top: -2px;
+        }
+
+        &.selected {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            border-color: @activeColor;
+        }
+
+        b {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            display: block;
+            width: 0;
+            height: 0;
+
+            border-style: solid;
+            border-width: 0 16px 16px 0;
+
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+        }
+    }
+}
+
+.ui.segments {
+    overflow: hidden;
+
+    .preview {
+        height: 80px;
+        background-position: center center !important;
+    }
+}
