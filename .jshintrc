@@ -1,5 +1,9 @@
 {
+  "globals": {
+    "panes": true
+  },
   "undef": true,
   "unused": true,
-  "esnext": true
+  "esnext": true,
+  "node": true
 }

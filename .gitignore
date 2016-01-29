@@ -1,9 +1,13 @@
+.electron/
+lo-rez/
+
+static/*.css
+
+static/semantic
+vendor/semantic
+
 versions/*
 !versions/.gitkeep
-vendor/semantic
-static/*.css
-static/semantic
-lo-rez/
 
 # Created by https://www.gitignore.io/api/linux,windows,osx,node
 

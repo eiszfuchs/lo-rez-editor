@@ -18,16 +18,19 @@
   "permission": false,
   "rtl": "No",
   "components": [
+    "reset",
+
+    "breadcrumb",
     "button",
+    "checkbox",
     "divider",
+    "dropdown",
+    "icon",
+    "input",
+    "label",
     "list",
     "segment",
-    "breadcrumb",
-    "checkbox",
-    "dropdown",
-    "transition",
-    "icon",
-    "label"
+    "transition"
   ],
   "version": "2.1.8"
 }

@@ -5,6 +5,8 @@
   "dependencies": {
     "adm-zip": "^0.4.7",
     "better-console": "^0.2.4",
+    "brace": "^0.7.0",
+    "deep-extend": "^0.4.1",
     "del": "^2.2.0",
     "extend": "^3.0.0",
     "glob": "^6.0.4",
@@ -38,6 +40,7 @@
     "require-dot-file": "^0.4.0",
     "run-sequence": "^1.1.5",
     "semantic-ui": "^2.1.8",
+    "three": "^0.73.2",
     "yamljs": "^0.2.4"
   }
 }

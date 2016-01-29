@@ -1,21 +1,23 @@
-/* jshint node:true, browser:true, jquery:true */
+/* jshint browser:true, jquery:true */
 
-"use strict";
+'use strict';
 
 const _ = require('lodash');
+
+const Library = require('../library');
+const library = new Library('lo-rez/textures.jsonl');
+require('../organizer')('texture').set(library);
 
 const $main = $('main');
 const $tabBar = $('main nav');
 
-const Color = require('../../modules/color');
+const Color = require('../color');
 
 const sourceScale = 10;
 
 const inArray = (array, value) => _.indexOf(array, value) >= 0;
 
-var panes = [];
-
-module.exports = function (zip, library) {
+let Editor = function (zip) {
     let self = this;
 
     let $tab = $('<a />').text(zip.short);
@@ -323,6 +325,7 @@ module.exports = function (zip, library) {
         panes = _.without(panes, self);
     };
 
+    $tab.on('click', self.show);
     $close.on('click', self.kill);
 
     self.pixels = function (pixels) {
@@ -382,8 +385,6 @@ module.exports = function (zip, library) {
         .text('Save')
         .on('click', self.save);
 
-    $tab.on('click', self.show);
-
     $previews.append('<div class="ui preview segment" />');
     $previews.append('<div class="ui preview segment" />');
 
@@ -410,3 +411,61 @@ module.exports = function (zip, library) {
 
     return self;
 };
+
+Editor.applies = (entry) => /textures\/(blocks|items).*\.png$/.test(entry.entryName);
+
+Editor.getListEntry = function (zip, entry) {
+    let caption = entry.entryName.replace(/^\/?assets\/minecraft\/textures\//, '');
+
+    let $file = $('<div />').addClass('item');
+    let $icon = $('<i />').addClass('icon');
+    let $content = $('<div />').addClass('content').text(caption);
+
+    $file.prop('zip', {
+        zip: zip,
+        entry: entry,
+        caption: caption,
+        short: caption.match(/[\w\-_]+\.\w+$/)[0],
+    });
+
+    $file.on('click', function () {
+        new Editor($(this).prop('zip'));
+    });
+
+    $icon.addClass('square');
+
+    if (library.get(entry.entryName)) {
+        $icon.addClass('green');
+    }
+
+    $file.append($icon);
+    $file.append($content);
+
+    return $file;
+};
+
+const fs = require('fs');
+const extractor = require('../extractor');
+const painter = require('../painter');
+const ZipOrganizer = require('../organizer')('zip');
+
+Editor.export = function () {
+    let currentZip = ZipOrganizer.get();
+
+    library.each(function (d, i) {
+        let src = 'data:image/png;base64,' + currentZip.getEntry(i).getData().toString('base64');
+
+        extractor(src, function (result) {
+            var data = painter(result, d).replace(/^data:image\/\w+;base64,/, '');
+            var buffer = new Buffer(data, 'base64');
+
+            fs.writeFile('lo-rez/' + i, buffer, function (error) {
+                if (error) {
+                    console.error(error);
+                }
+            });
+        });
+    });
+};
+
+module.exports = Editor;

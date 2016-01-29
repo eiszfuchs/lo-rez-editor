@@ -1,5 +1,3 @@
-/* jshint node:true */
-
 'use strict';
 
 const fs = require('fs');
@@ -74,6 +72,10 @@ module.exports = function (savePath) {
 
     self.get = function (name) {
         return storage[name];
+    };
+
+    self.has = function (name) {
+        return storage.hasOwnProperty(name);
     };
 
     self.each = function (callback) {

@@ -1,4 +1,4 @@
-/* jshint node:true, browser:true, jquery:true */
+/* jshint browser:true, jquery:true */
 
 (function () {
     'use strict';
@@ -12,26 +12,35 @@
         });
     });
 
+    const _ = require('lodash');
+
+    const ZipOrganizer = require('../modules/organizer')('zip');
+
     const glob = require('glob');
-    const fs = require('fs');
     const Zip = require('adm-zip');
 
-    const extractor = require('../modules/extractor');
-    const Library = require('../modules/library');
-    const textureLibrary = new Library('lo-rez/textures.jsonl');
-    const Pane = require('../modules/texture-editor');
+    let Editors = [];
+
+    glob('modules/*-editor', function (error, files) {
+        if (error) {
+            console.error(error);
+        }
+
+        files.forEach(function (file) {
+            Editors.push(require(`../${file}`));
+        });
+    });
 
     glob('versions/*.jar', function (error, files) {
         if (error) {
             console.error(error);
+            return;
         }
 
         files.sort(); // better safe than sorry
 
         const $select = $('#versions');
         const $list = $('#files');
-
-        let currentZip = null;
 
         $select.on('change', function () {
             let value = $select.find('option:selected').val();
@@ -45,47 +54,30 @@
             let zip = new Zip(value);
             let entries = zip.getEntries();
 
-            currentZip = zip;
+            ZipOrganizer.set(zip);
 
             entries.forEach(function (entry) {
-                if (!/textures\/(blocks|items)/.test(entry.entryName)) {
-                    return;
-                }
-
-                let caption = entry.entryName.replace(/^\/?assets\/minecraft\/textures\//, '');
-
-                let $file = $('<div />').addClass('item');
-                let $icon = $('<i />').addClass('icon');
-                let $content = $('<div />').addClass('content').text(caption);
-
-                $file.prop('zip', {
-                    caption: caption,
-                    short: caption.match(/[\w\-_]+\.\w+$/)[0],
-                    zip: zip,
-                    entry: entry,
-                });
-
-                $icon.addClass('circle');
-
-                fs.access('./lo-rez/' + entry.entryName, fs.R_OK | fs.W_OK, function (error) {
-                    if (error) {
-                        $icon.addClass('thin');
+                Editors.forEach(function (Pane) {
+                    if (!Pane.applies(entry)) {
+                        return true;
                     }
-                });
 
-                if (textureLibrary.get(entry.entryName)) {
-                    $icon.addClass('green');
+                    $list.append(Pane.getListEntry(zip, entry));
+                });
+            });
+
+            $list.append($list.find('.item').sort(function (a, b) {
+                a = $(a).prop('zip').short;
+                b = $(b).prop('zip').short;
+
+                if (a > b) {
+                    return 1;
+                } else if (b > a) {
+                    return -1;
                 }
 
-                $file.append($icon);
-                $file.append($content);
-
-                $list.append($file);
-            });
-        });
-
-        $list.on('click', '.item', function () {
-            new Pane($(this).prop('zip'), textureLibrary);
+                return 0;
+            }));
         });
 
         files.forEach(function (file) {
@@ -94,24 +86,28 @@
             $select.append($option);
         });
 
+        $('#filter input').on('keyup', _.debounce(function () {
+            let query = $(this).val();
+
+            $list.find('.item').each(function () {
+                let $item = $(this);
+                let zip = $item.prop('zip');
+
+                if (!zip) {
+                    return true;
+                }
+
+                $item.toggleClass('hidden', !zip.entry.entryName.includes(query));
+            });
+        }, 100));
+
         $('#export').on('click', function () {
-            if (currentZip === null) {
+            if (ZipOrganizer.get() === null) {
                 return false;
             }
 
-            textureLibrary.each(function (d, i) {
-                let src = 'data:image/png;base64,' + currentZip.getEntry(i).getData().toString('base64');
-
-                extractor.extract(src, function (result) {
-                    var data = extractor.applied(result, d).replace(/^data:image\/\w+;base64,/, '');
-                    var buffer = new Buffer(data, 'base64');
-
-                    fs.writeFile('lo-rez/' + i, buffer, function (error) {
-                        if (error) {
-                            console.error(error);
-                        }
-                    });
-                });
+            Editors.forEach(function (Pane) {
+                Pane.export();
             });
 
             return false;
