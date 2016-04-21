@@ -22,15 +22,15 @@ const resolveTextureUV = function (face, data, callback) {
         face.uv = [0, 0, 16, 16];
     }
 
-    let minX = face.uv[0];
-    let minY = face.uv[1];
-    let maxX = face.uv[2];
-    let maxY = face.uv[3];
+    let uvX1 = face.uv[0];
+    let uvY1 = face.uv[1];
+    let uvX2 = face.uv[2];
+    let uvY2 = face.uv[3];
 
-    minX = _.min([minX, maxX]);
-    minY = _.min([minY, maxY]);
-    maxX = _.max([minX, maxX]);
-    maxY = _.max([minY, maxY]);
+    let minX = _.min([uvX1, uvX2]);
+    let minY = _.min([uvY1, uvY2]);
+    let maxX = _.max([uvX1, uvX2]);
+    let maxY = _.max([uvY1, uvY2]);
 
     let width = Math.abs(maxX - minX);
     let height = Math.abs(maxY - minY);
@@ -60,20 +60,46 @@ const resolveTextureUV = function (face, data, callback) {
 
     let $img = $('<img />').on('load', function () {
         let sourceCanvas = document.createElement('canvas');
-        sourceCanvas.width = this.naturalWidth;
-        sourceCanvas.height = this.naturalHeight;
+        let sourceWidth = this.naturalWidth;
+        let sourceHeight = this.naturalHeight;
+
+        sourceCanvas.width = sourceWidth;
+        sourceCanvas.height = sourceHeight;
 
         let sourceContext = sourceCanvas.getContext('2d');
-        sourceContext.drawImage(this, 0, 0);
 
-        _.each(_.range(minY, maxY), function (y) {
-            _.each(_.range(minX, maxX), function (x) {
+        sourceContext.save();
+        sourceContext.translate(sourceWidth / 2, sourceHeight / 2);
+        if (_.has(face, 'rotation')) {
+            sourceContext.rotate(face.rotation * π / -180);
+        }
+        sourceContext.drawImage(this, sourceWidth / -2, sourceHeight / -2);
+        sourceContext.restore();
+
+        let uvXrange = _.range(minX, maxX);
+        let uvYrange = _.range(minY, maxY);
+
+        if (uvX2 === minX) {
+            uvXrange = uvXrange.reverse();
+        }
+
+        if (uvY2 === minY) {
+            uvYrange = uvYrange.reverse();
+        }
+
+        let drawY = 0;
+        _.each(uvYrange, function (y) {
+            let drawX = 0;
+
+            _.each(uvXrange, function (x) {
                 let pixel = sourceContext.getImageData(x, y, 1, 1);
                 let color = new Color(pixel.data);
 
                 context.fillStyle = color.rgba();
-                context.fillRect(x - minX, y - minY, 1, 1);
+                context.fillRect(drawX++, drawY, 1, 1);
             });
+
+            drawY++;
         });
 
         callback(imageCanvas);
@@ -178,8 +204,8 @@ const addCube = function (parent, element, data) {
     // north
     if (_.has(element.faces, 'north')) {
         planes.push({
-            p: {x: min.x + (max.x - min.x) / 2, y: min.y + (max.y - min.y) / 2, z: max.z},
-            r: {x: 0, y: 0, z: 0},
+            p: {x: min.x + (max.x - min.x) / 2, y: min.y + (max.y - min.y) / 2, z: min.z},
+            r: {x: π, y: 0, z: π},
             w: max.x - min.x, h: max.y - min.y,
             f: element.faces.north,
         });
@@ -188,8 +214,8 @@ const addCube = function (parent, element, data) {
     // south
     if (_.has(element.faces, 'south')) {
         planes.push({
-            p: {x: min.x + (max.x - min.x) / 2, y: min.y + (max.y - min.y) / 2, z: min.z},
-            r: {x: π, y: 0, z: π},
+            p: {x: min.x + (max.x - min.x) / 2, y: min.y + (max.y - min.y) / 2, z: max.z},
+            r: {x: 0, y: 0, z: 0},
             w: max.x - min.x, h: max.y - min.y,
             f: element.faces.south,
         });
@@ -280,6 +306,7 @@ let Viewer = function () {
             return;
         }
 
+        // reset after dragging
         pivot.rotation.x = approx(pivot.rotation.x, 0);
         pivot.rotation.y += 0.005;
         pivot.rotation.z = approx(pivot.rotation.z, 0);

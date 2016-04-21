@@ -63,11 +63,11 @@ let Editor = function (zip) {
             return result;
         }
 
-        if ((x + width) > context.width) {
+        if ((x + width) > context.canvas.width) {
             return result;
         }
 
-        if ((y + height) > context.height) {
+        if ((y + height) > context.canvas.height) {
             return result;
         }
 
@@ -366,20 +366,77 @@ let Editor = function (zip) {
         });
     };
 
-    let $autoPilotAction = $('<button class="compact ui left floated button" />')
-        .text('Auto pilot')
-        .on('click', function () {
+    const getAutoPilotPalette = function () {
+        let x = parseInt(this.attr('data-x'));
+        let y = parseInt(this.attr('data-y'));
+
+        let colors = getColorsAt(x * 2, y * 2, 2, 2);
+        let average = Color.mix(colors);
+
+        return _.sortBy(colors, d => d.distance(average));
+    };
+
+    let $autoPilotActions = $(`<div class="compact ui left floated buttons">
+        <div class="ui button" data-method="nearest">Auto pilot</div>
+        <div class="ui floating dropdown icon button"><i class="dropdown icon"></i>
+        <div class="menu">
+            <div class="item" data-method="nearest">Nearest</div>
+            <div class="item" data-method="farest">Farest</div>
+            <div class="item" data-method="edges-outside">Edges outside</div>
+            <div class="item" data-method="edges-inside">Edges inside</div>
+        </div></div></div>`)
+        .on('click', '[data-method="nearest"]', function () {
             $editor.find('.cell').each(function () {
                 let $cell = $(this);
-                let x = parseInt($cell.attr('data-x'));
-                let y = parseInt($cell.attr('data-y'));
 
-                let colors = getColorsAt(x * 2, y * 2, 2, 2);
-                let average = Color.mix(colors);
-                colors = _.sortBy(colors, d => d.distance(average)); // .reverse();
-                $cell.attr('data-color', getPaletteIndex(colors[0]));
+                $cell.attr('data-color', getPaletteIndex(
+                    getAutoPilotPalette.apply($cell)[0]));
+            }).end().trigger('refresh');
+        })
+        .on('click', '[data-method="farest"]', function () {
+            $editor.find('.cell').each(function () {
+                let $cell = $(this);
+
+                $cell.attr('data-color', getPaletteIndex(
+                    getAutoPilotPalette.apply($cell).reverse()[0]));
+            }).end().trigger('refresh');
+        })
+        .on('click', '[data-method="edges-outside"]', function () {
+            $editor.find('.cell').each(function () {
+                let $cell = $(this);
+                let x = parseInt($cell.attr('data-x')) * 2;
+                let y = parseInt($cell.attr('data-y')) * 2;
+
+                if (x >= context.canvas.width / 2) {
+                    x += 1;
+                }
+
+                if (y >= context.canvas.height / 2) {
+                    y += 1;
+                }
+
+                $cell.attr('data-color', getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
+            }).end().trigger('refresh');
+        })
+        .on('click', '[data-method="edges-inside"]', function () {
+            $editor.find('.cell').each(function () {
+                let $cell = $(this);
+                let x = 1 + parseInt($cell.attr('data-x')) * 2;
+                let y = 1 + parseInt($cell.attr('data-y')) * 2;
+
+                if (x >= context.canvas.width / 2) {
+                    x -= 1;
+                }
+
+                if (y >= context.canvas.height / 2) {
+                    y -= 1;
+                }
+
+                $cell.attr('data-color', getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
             }).end().trigger('refresh');
         });
+
+    $autoPilotActions.find('.ui.dropdown').dropdown();
 
     let $saveAction = $('<button class="compact ui primary right floated button" />')
         .text('Save')
@@ -401,7 +458,7 @@ let Editor = function (zip) {
     $pane.append($segments);
     $pane.append($previews);
 
-    $pane.append($autoPilotAction);
+    $pane.append($autoPilotActions);
     $pane.append($saveAction);
 
     $main.append($pane);
