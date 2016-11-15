@@ -1,22 +1,18 @@
-'use strict';
-
-const electron = require('electron');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
+const {app, BrowserWindow} = require('electron');
 
 // https://github.com/atom/electron/issues/647
-// http://electron.atom.io/docs/v0.36.5/api/app/#app-setpath-name-path
+// http://electron.atom.io/docs/api/app/#appsetpathname-path
 // This basically makes the application portable.
-app.setPath('userData', __dirname + '/.electron/');
-
-var mainWindow = null;
+app.setPath('userData', `${__dirname}/.electron/`);
 
 const fs = require('fs');
 const less = require('less');
 
 const staticFolder = 'static/';
 
-const compile = function (filename, callback) {
+let mainWindow;
+
+function compile (filename, callback) {
     if (filename.endsWith('.less')) {
         let source = staticFolder + filename;
         let target = source.replace('.less', '.css');
@@ -51,24 +47,26 @@ fs.watch(staticFolder, { persistent: true, recursive: true }, function (event, f
     compile(filename);
 });
 
-app.on('window-all-closed', function () {
-    // if (process.platform != 'darwin') {}
-
-    app.quit();
-});
-
 app.on('ready', function () {
     compile('index.less', function () {
         mainWindow = new BrowserWindow({
-            'auto-hide-menu-bar': true,
+            autoHideMenuBar: true,
             width: 740,
             height: 520,
-            webPreferences: {},
+            webPreferences: {
+                webgl: true,
+            },
         });
-        mainWindow.loadURL('file://' + __dirname + '/views/index.html');
 
-        mainWindow.on('closed', function () {
+        mainWindow.loadURL(`file://${__dirname}/views/index.html`);
+        // mainWindow.webContents.openDevTools();
+
+        mainWindow.on('closed', () => {
             mainWindow = null;
         });
     });
+});
+
+app.on('window-all-closed', () => {
+    app.quit();
 });
