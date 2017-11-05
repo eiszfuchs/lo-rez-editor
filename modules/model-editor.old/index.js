@@ -5,6 +5,7 @@
 const encoding = 'utf8';
 
 const _ = require('lodash');
+const doT = require('dot');
 const extendDeep = require('deep-extend');
 
 const ace = require('brace');
@@ -20,8 +21,17 @@ const Viewer = require('./viewer.js');
 const $main = $('main');
 const $tabBar = $('main nav');
 
-let Editor = function (zip) {
-    let self = this;
+const entryTemplate = doT.template(`
+    <li>
+        <i class="fa {{=it.icon}}"></i>
+        {{=it.caption}}
+    </li>
+`);
+
+const Editor = function (paneManager, zip) {
+    const self = this;
+
+    return paneManager.add(self);
 
     let $tab = $('<a />').text(zip.short);
     let $close = $('<i />').addClass('close icon');
@@ -186,34 +196,26 @@ let Editor = function (zip) {
 
 Editor.applies = (entry) => /models\/(block).*\.json$/.test(entry.entryName);
 
-Editor.getListEntry = function (zip, entry) {
-    let caption = entry.entryName.replace(/^\/?assets\/minecraft\/models\//, '');
+Editor.getListEntry = (paneOrganizer, zip, entry) => {
+    const caption = entry.entryName.replace(/^\/?assets\/minecraft\/models\//, '');
 
-    let $file = $('<div />').addClass('item');
-    let $icon = $('<i />').addClass('icon');
-    let $content = $('<div />').addClass('content').text(caption);
+    let icon = 'fa-cube';
 
-    $file.prop('zip', {
+    if (library.get(entry.entryName)) {
+        icon += ' has-text-success';
+    }
+
+    return $(entryTemplate({
+        caption,
+        icon,
+    }).trim()).prop('zip', {
         zip: zip,
         entry: entry,
         caption: caption,
         short: caption.match(/[\w\-_]+\.\w+$/)[0],
+    }).on('click', function () {
+        new Editor(paneOrganizer, $(this).prop('zip'));
     });
-
-    $file.on('click', function () {
-        new Editor($(this).prop('zip'));
-    });
-
-    $icon.addClass('cube');
-
-    if (library.get(entry.entryName)) {
-        $icon.addClass('green');
-    }
-
-    $file.append($icon);
-    $file.append($content);
-
-    return $file;
 };
 
 const fs = require('fs');

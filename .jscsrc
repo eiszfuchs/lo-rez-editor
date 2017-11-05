@@ -1,7 +1,0 @@
-{
-    "validateQuoteMarks": {
-        "mark": true,
-        "escape": true
-    },
-    "esnext": true
-}

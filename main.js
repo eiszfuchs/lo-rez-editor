@@ -12,54 +12,68 @@ const staticFolder = 'static/';
 
 let mainWindow;
 
-function compile (filename, callback) {
-    if (filename.endsWith('.less')) {
-        let source = staticFolder + filename;
-        let target = source.replace('.less', '.css');
+const compile = (filename, callback) => {
+    if (!filename.endsWith('.less')) {
+        return;
+    }
 
-        fs.readFile(source, 'utf8', function (error, data) {
-            less.render(data, {}, function (error, output) {
-                if (error) {
+    const target = filename.replace('.less', '.css');
+
+    fs.readFile(filename, 'utf8', (readError, data) => {
+        if (readError) {
+            return;
+        }
+
+        less.render(data, {}, (renderError, output) => {
+            if (renderError) {
+                return;
+            }
+
+            fs.writeFile(target, output.css, 'utf8', (writeError) => {
+                if (writeError) {
                     return;
                 }
 
-                fs.writeFile(target, output.css, 'utf8', function (error) {
-                    if (error) {
-                        return;
-                    }
+                if (callback) {
+                    callback();
+                }
 
-                    if (callback) {
-                        callback();
-                    }
+                if (mainWindow === null) {
+                    return;
+                }
 
-                    if (mainWindow === null) {
-                        return;
-                    }
-
-                    mainWindow.webContents.send('css', target);
-                });
+                mainWindow.webContents.send('css', target);
             });
         });
-    }
+    });
 };
 
-fs.watch(staticFolder, { persistent: true, recursive: true }, function (event, filename) {
-    compile(filename);
+fs.watch(staticFolder, {
+    persistent: true,
+    recursive: true,
+}, (event, filename) => {
+    compile(`${staticFolder}${filename}`);
 });
 
-app.on('ready', function () {
-    compile('index.less', function () {
+app.on('ready', () => {
+    compile(`${staticFolder}index.less`, () => {
         mainWindow = new BrowserWindow({
-            autoHideMenuBar: true,
-            width: 740,
+            center: true,
+
+            width: 800,
+            minWidth: 770,
             height: 520,
+            minHeight: 520,
+
+            useContentSize: true,
+            autoHideMenuBar: true,
             webPreferences: {
                 webgl: true,
             },
         });
 
         mainWindow.loadURL(`file://${__dirname}/views/index.html`);
-        // mainWindow.webContents.openDevTools();
+        mainWindow.webContents.openDevTools();
 
         mainWindow.on('closed', () => {
             mainWindow = null;

@@ -1,19 +1,21 @@
 {
   "name": "lo-rez-editor",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "main.js",
   "private": true,
+  "devDependencies": {
+    "electron": "1.7.9"
+  },
   "dependencies": {
     "adm-zip": "0.4.7",
-    "brace": "0.9.0",
-    "deep-extend": "0.4.1",
-    "del": "2.2.2",
-    "extend": "3.0.0",
-    "glob": "7.1.1",
-    "jquery": "3.1.1",
-    "less": "2.7.1",
-    "lodash": "4.17.1",
-    "semantic-ui-css": "2.2.4",
-    "three": "0.82.1"
+    "brace": "0.10.0",
+    "bulma": "0.6.0",
+    "dot": "1.1.2",
+    "font-awesome": "4.7.0",
+    "glob": "7.1.2",
+    "jquery": "3.2.1",
+    "less": "2.7.3",
+    "lodash": "4.17.4",
+    "three": "0.88.0"
   }
 }

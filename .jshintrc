@@ -1,9 +1,0 @@
-{
-  "globals": {
-    "panes": true
-  },
-  "undef": true,
-  "unused": true,
-  "esnext": true,
-  "node": true
-}

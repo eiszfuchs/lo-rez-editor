@@ -1,13 +1,11 @@
-'use strict';
-
-let stash = {};
+const stash = {};
 
 module.exports = (namespace) => ({
-    set: function (something) {
+    set: (something) => {
         stash[namespace] = something;
     },
 
-    get: function () {
+    get: () => {
         if (!stash.hasOwnProperty(namespace)) {
             return null;
         }

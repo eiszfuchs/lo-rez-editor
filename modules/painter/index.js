@@ -1,26 +1,19 @@
-/* jshint browser:true */
-
-'use strict';
-
 const _ = require('lodash');
 
-let paint = function (result, texture, scale) {
-    let width = result.width / 2;
-    let height = result.height / 2;
+const paint = function (result, texture, scale = 1) {
+    const width = result.width / 2;
+    const height = result.height / 2;
 
-    if (!scale) {
-        scale = 1;
-    }
+    const canvas = document.createElement('canvas');
 
-    let canvas = document.createElement('canvas');
     canvas.width = width * scale;
     canvas.height = height * scale;
 
-    let context = canvas.getContext('2d');
+    const context = canvas.getContext('2d');
 
     _.each(texture, function (d, i) {
-        let x = i % width;
-        let y = Math.floor(i / width);
+        const x = i % width;
+        const y = Math.floor(i / width);
 
         let colorValue = 'transparent';
 
@@ -32,7 +25,7 @@ let paint = function (result, texture, scale) {
         context.fillRect(x * scale, y * scale, scale, scale);
     });
 
-    return canvas.toDataURL();
+    return canvas.toDataURL('image/png', 1.0);
 };
 
 const extractor = require('../extractor');
@@ -41,9 +34,9 @@ const ZipOrganizer = organize('zip');
 const TextureOrganizer = organize('texture');
 
 paint.resolveTexture = function (textureName, callback) {
-    let entryName = `assets/minecraft/textures/${textureName}.png`;
-    let entry = ZipOrganizer.get().getEntry(entryName);
-    let src = 'data:image/png;base64,' + entry.getData().toString('base64');
+    const entryName = `assets/minecraft/textures/${textureName}.png`;
+    const entry = ZipOrganizer.get().getEntry(entryName);
+    const src = `data:image/png;base64,${entry.getData().toString('base64')}`;
 
     if (TextureOrganizer.get().has(entryName)) {
         extractor(src, function (result) {

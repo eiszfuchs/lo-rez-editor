@@ -19,7 +19,8 @@ const format = function (data) {
         }));
     });
 
-    return lines.join(newline);
+    // End files with newline character
+    return lines.join(newline) + newline;
 };
 
 const parse = function (lines) {
@@ -41,6 +42,10 @@ module.exports = function (savePath) {
     let self = this;
 
     let storage = {};
+
+    if (!fs.existsSync(savePath)) {
+        fs.closeSync(fs.openSync(savePath, 'a'));
+    }
 
     fs.readFile(savePath, encoding, function (error, data) {
         if (error) {
