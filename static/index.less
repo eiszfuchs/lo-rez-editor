@@ -4,9 +4,10 @@
 @palette-color-size: 20px;
 
 .transparency {
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAHWlUWHRDb21tZW50AAAAAABDcmVhdGVkIHdpdGggR0lNUGQuZQcAAAArSURBVDjLY6ytrf3PgAeYmZnhk2ZgYqAQjBowGAxgIRTPp06dGg3E4W8AAIWABjoKHAS3AAAAAElFTkSuQmCC");
+    background-image: url(is-transparent.png);
     background-repeat: repeat;
     background-position: top left;
+    background-attachment: fixed;
 }
 
 .bordered {
@@ -72,7 +73,6 @@ aside {
     display: flex;
     justify-content: space-around;
 
-    margin: 8px;
     padding: 8px;
 
     .bordered;
@@ -91,8 +91,6 @@ aside {
 }
 
 .ui-row {
-    margin: 8px;
-
     display: flex;
     justify-content: space-between;
 
@@ -110,6 +108,10 @@ main {
     > .tabs {
         margin-bottom: 0 !important;
         flex-shrink: 0;
+
+        .delete {
+            margin-left: 0.25rem;
+        }
     }
 
     > section {
@@ -132,6 +134,14 @@ main {
         flex-direction: column;
 
         flex: 1 1 auto;
+
+        padding: 8px;
+
+        > * {
+            + * {
+                margin-top: 8px;
+            }
+        }
 
         &:not(.open) {
             display: none;
@@ -174,7 +184,6 @@ form {
     display: flex;
     flex-wrap: wrap;
 
-    margin: 8px;
     padding: 8px 0 0 8px;
 
     .bordered;
@@ -245,6 +254,13 @@ form {
 
         .cell {
             flex: 1 0 1%;
+
+            &:not([data-color]) {
+                background-image: url(is-null.png);
+                background-repeat: repeat;
+                background-position: top left;
+                background-attachment: fixed;
+            }
 
             &:hover {
                 box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);

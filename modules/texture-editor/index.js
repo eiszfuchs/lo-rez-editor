@@ -477,6 +477,14 @@ const Editor = function (paneManager, zip) {
 
     self.getPane = () => $pane;
 
+    self.destroy = () => {
+        $source.off();
+        $palette.find('li').off();
+        $editor.off();
+        $save.off();
+        $pane.find('.js-auto-pilot').off();
+    };
+
     return paneManager.add(self);
 };
 
