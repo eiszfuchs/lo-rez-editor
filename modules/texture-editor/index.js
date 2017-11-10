@@ -20,7 +20,7 @@ const inArray = (array, value) => _.indexOf(array, value) >= 0;
 const makeBase64 = (data) => `data:image/png;base64,${data.toString('base64')}`;
 
 const entryTemplate = doT.template(`<li>
-    <i class="fa {{=it.icon}}"></i>
+    <i class="{{=it.icon}}"></i>
     {{=it.caption}}
 </li>`);
 
@@ -50,10 +50,25 @@ const editorTemplate = doT.template(`<div>
 
             <div class="dropdown-menu">
                 <div class="dropdown-content">
-                    <a class="dropdown-item" data-method="nearest">Nearest</a>
-                    <a class="dropdown-item" data-method="farest">Farest</a>
-                    <a class="dropdown-item" data-method="edges-outside">Edges outside</a>
-                    <a class="dropdown-item" data-method="edges-inside">Edges inside</a>
+                    <a class="dropdown-item" data-method="nearest">
+                        Nearest
+                    </a>
+
+                    <a class="dropdown-item" data-method="farest">
+                        Farest
+                    </a>
+
+                    <a class="dropdown-item" data-method="top-left">
+                        Copy top-left
+                    </a>
+
+                    <a class="dropdown-item" data-method="edges-outside">
+                        Edges outside
+                    </a>
+
+                    <a class="dropdown-item" data-method="edges-inside">
+                        Edges inside
+                    </a>
                 </div>
             </div>
         </div>
@@ -77,6 +92,7 @@ const Editor = function (paneManager, zip) {
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
     const $save = $pane.find('.js-save');
+    const $autopilot = $pane.find('.js-auto-pilot');
 
     let palette = [];
     let selectedColor = null;
@@ -354,7 +370,8 @@ const Editor = function (paneManager, zip) {
             $editor.append($row);
         });
 
-        $previews.filter('.source').css('background-image', `url(${preview.toDataURL()})`);
+        $previews.filter('.source')
+            .css('background-image', `url(${preview.toDataURL()})`);
 
         self.pixels(library.get(zip.entry.entryName));
 
@@ -399,40 +416,58 @@ const Editor = function (paneManager, zip) {
     });
 
     const getAutoPilotPalette = function () {
-        let x = parseInt(this.attr('data-x'));
-        let y = parseInt(this.attr('data-y'));
+        const x = parseInt(this.attr('data-x'), 10);
+        const y = parseInt(this.attr('data-y'), 10);
 
-        let colors = getColorsAt(x * 2, y * 2, 2, 2);
-        let average = Color.mix(colors);
+        const colors = getColorsAt(x * 2, y * 2, 2, 2);
+        const average = Color.mix(colors);
 
-        return _.sortBy(colors, d => d.distance(average));
+        return _.sortBy(colors, (d) => d.distance(average));
     };
 
-    $pane.find('.js-auto-pilot')
+    $autopilot
         .on('click', function () {
             $(this).toggleClass('is-active');
         })
         .on('click', '[data-method="nearest"]', function () {
             $editor.find('.cell').each(function () {
-                let $cell = $(this);
+                const $cell = $(this);
 
                 $cell.attr('data-color', getPaletteIndex(
-                    getAutoPilotPalette.apply($cell)[0]));
-            }).end().trigger('refresh');
+                    getAutoPilotPalette.apply($cell)[0]
+                ));
+            }).end()
+                .trigger('refresh');
         })
         .on('click', '[data-method="farest"]', function () {
             $editor.find('.cell').each(function () {
-                let $cell = $(this);
+                const $cell = $(this);
 
                 $cell.attr('data-color', getPaletteIndex(
-                    getAutoPilotPalette.apply($cell).reverse()[0]));
-            }).end().trigger('refresh');
+                    getAutoPilotPalette.apply($cell).reverse()[0]
+                ));
+            }).end()
+                .trigger('refresh');
+        })
+        .on('click', '[data-method="top-left"]', function () {
+            $editor.find('.cell').each(function () {
+                const $cell = $(this);
+
+                const x = parseInt($cell.attr('data-x'), 10);
+                const y = parseInt($cell.attr('data-y'), 10);
+
+                $cell.attr('data-color', getPaletteIndex(
+                    getColorsAt(x, y, 1, 1)[0]
+                ));
+            }).end()
+                .trigger('refresh');
         })
         .on('click', '[data-method="edges-outside"]', function () {
             $editor.find('.cell').each(function () {
-                let $cell = $(this);
-                let x = parseInt($cell.attr('data-x')) * 2;
-                let y = parseInt($cell.attr('data-y')) * 2;
+                const $cell = $(this);
+
+                let x = parseInt($cell.attr('data-x'), 10) * 2;
+                let y = parseInt($cell.attr('data-y'), 10) * 2;
 
                 if (x >= context.canvas.width / 2) {
                     x += 1;
@@ -442,14 +477,18 @@ const Editor = function (paneManager, zip) {
                     y += 1;
                 }
 
-                $cell.attr('data-color', getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
-            }).end().trigger('refresh');
+                $cell.attr('data-color', getPaletteIndex(
+                    getColorsAt(x, y, 1, 1)[0]
+                ));
+            }).end()
+                .trigger('refresh');
         })
         .on('click', '[data-method="edges-inside"]', function () {
             $editor.find('.cell').each(function () {
-                let $cell = $(this);
-                let x = 1 + parseInt($cell.attr('data-x')) * 2;
-                let y = 1 + parseInt($cell.attr('data-y')) * 2;
+                const $cell = $(this);
+
+                let x = 1 + parseInt($cell.attr('data-x'), 10) * 2;
+                let y = 1 + parseInt($cell.attr('data-y'), 10) * 2;
 
                 if (x >= context.canvas.width / 2) {
                     x -= 1;
@@ -459,8 +498,10 @@ const Editor = function (paneManager, zip) {
                     y -= 1;
                 }
 
-                $cell.attr('data-color', getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
-            }).end().trigger('refresh');
+                $cell.attr('data-color',
+                    getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
+            }).end()
+                .trigger('refresh');
         });
 
     self.save = function () {
@@ -468,6 +509,8 @@ const Editor = function (paneManager, zip) {
 
         library.set(zip.entry.entryName, self.pixels(), () => {
             $save.removeClass('is-loading');
+
+            $('#files').trigger('refresh');
         });
     };
 
@@ -482,7 +525,7 @@ const Editor = function (paneManager, zip) {
         $palette.find('li').off();
         $editor.off();
         $save.off();
-        $pane.find('.js-auto-pilot').off();
+        $autopilot.off();
     };
 
     return paneManager.add(self);
@@ -508,23 +551,33 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
     const caption = entry.entryName
         .replace(/^\/?assets\/minecraft\/textures\//, '');
 
-    let icon = 'fa-square';
-
-    if (library.get(entry.entryName)) {
-        icon += ' has-text-success';
-    }
-
     return $(entryTemplate({
-        caption,
-        icon,
+        caption: caption,
+        icon: 'fa fa-square',
     })).prop('zip', {
         zip: zip,
         entry: entry,
+        editor: Editor,
         caption: caption,
         short: caption.match(/[\w\-_]+\.\w+$/)[0],
     }).on('click', function () {
         new Editor(paneOrganizer, $(this).prop('zip'));
     });
+};
+
+Editor.refreshListEntry = (properties, $entry) => {
+    const entry = properties.entry;
+    const definition = library.get(entry.entryName);
+    const isDefined = typeof definition !== 'undefined';
+
+    $entry.toggleClass('is-defined', isDefined);
+
+    if (isDefined) {
+        $entry.toggleClass('has-null',
+            definition.some((d) => d === null));
+    } else {
+        $entry.removeClass('has-null');
+    }
 };
 
 const fs = require('fs');

@@ -25,6 +25,15 @@
     const $versionSelect = $('#versions');
     const $list = $('#files');
 
+    const refreshList = () => {
+        $list.find('.list-entry').each(function () {
+            const $entry = $(this);
+            const properties = $entry.prop('zip');
+
+            properties.editor.refreshListEntry(properties, $entry);
+        });
+    };
+
     glob('versions/*.jar', function (error, files) {
         if (error) {
             console.error(error);
@@ -65,32 +74,52 @@
                         return;
                     }
 
-                    $list.append(Pane.getListEntry(PaneOrganizer, zip, entry));
+                    $list.append(Pane.getListEntry(PaneOrganizer, zip, entry)
+                        .addClass('list-entry'));
                 });
             });
+
+            refreshList();
         });
+
+        if (files.length === 1) {
+            setTimeout(function () {
+                $versionSelect
+                    .find('option')
+                    .last()
+                    .prop('selected', true)
+                    .siblings()
+                    .prop('selected', false)
+                    .trigger('change');
+            }, 300);
+        }
     });
 
-    $('#filter').on('keyup', _.debounce(function () {
-        const query = $(this).val();
+    $list
+        .on('refresh', _.debounce(refreshList, 100));
 
-        if (!query) {
-            $list.find('li').removeClass('hidden');
+    $('#filter')
+        .on('keyup', _.debounce(function () {
+            const query = $(this).val();
 
-            return;
-        }
+            if (!query) {
+                $list.find('li').removeClass('hidden');
 
-        $list.find('li').each(function () {
-            const $item = $(this);
-            const zip = $item.prop('zip');
-
-            if (!zip) {
                 return;
             }
 
-            $item.toggleClass('hidden', !zip.entry.entryName.includes(query));
-        });
-    }, 100));
+            $list.find('li').each(function () {
+                const $item = $(this);
+                const zip = $item.prop('zip');
+
+                if (!zip) {
+                    return;
+                }
+
+                $item.toggleClass('hidden',
+                    !zip.entry.entryName.includes(query));
+            });
+        }, 100));
 
     $('#export').on('click', () => {
         if (ZipOrganizer.get() === null) {

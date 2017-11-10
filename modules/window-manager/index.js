@@ -16,9 +16,6 @@ const WindowManager = function () {
     const windows = [];
 
     this.close = (win) => {
-        win.$tab.siblings().removeClass('is-active');
-        win.$pane.siblings().removeClass('open');
-
         win.editor.destroy();
 
         win.$tab.remove();
