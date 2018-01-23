@@ -4,7 +4,7 @@
   "main": "main.js",
   "private": true,
   "devDependencies": {
-    "electron": "1.8.1"
+    "electron": "1.7.11"
   },
   "dependencies": {
     "adm-zip": "0.4.7",
