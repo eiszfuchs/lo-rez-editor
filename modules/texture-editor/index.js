@@ -9,6 +9,7 @@ const library = new Library('lo-rez/textures.jsonl');
 require('../organizer')('texture').set(library);
 
 const Color = require('../color');
+const Palette = require('../palette');
 
 const viewScale = 12;
 const sourcePreviewScale = 2;
@@ -110,7 +111,11 @@ const Editor = function (paneManager, zip) {
             let index = 0;
 
             $editor.find('.cell').each(function () {
-                $(this).attr('data-color', pixels[index]);
+                const color = pixels[index];
+
+                if (palette.hasOwnProperty(color)) {
+                    $(this).attr('data-color', color);
+                }
 
                 index += 1;
             });
@@ -161,14 +166,18 @@ const Editor = function (paneManager, zip) {
     const highlightColors = function (picked) {
         $palette.find('li').removeClass('picked').each(function () {
             const $color = $(this);
-            const color = palette[$color.index()].hex();
+            const colors = palette[$color.index()].links();
 
-            $color.toggleClass('picked', inArray(picked, color));
+            colors.forEach((color) => {
+                if (inArray(picked, color)) {
+                    $color.addClass('picked');
+                }
+            });
         });
     };
 
     const getPaletteIndex = function (color) {
-        return _.findIndex(palette, (d) => d.hex() === color.hex());
+        return _.findIndex(palette, (d) => inArray(d.links(), color.hex()));
     };
 
     const setEditorValue = function ($cell, color) {
@@ -339,7 +348,7 @@ const Editor = function (paneManager, zip) {
             }
         }
 
-        palette = _.uniqBy(palette, (d) => d.hex());
+        palette = Palette.cleanup(palette);
 
         palette.forEach((color, index) => {
             const $color = $(`<li>

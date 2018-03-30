@@ -1,32 +1,33 @@
-/* jshint browser:true */
-
 'use strict';
 
 const _ = require('lodash');
 
 const Color = require('../color');
+const Palette = require('../palette');
 
 module.exports = function (src, callback) {
-    let source = document.createElement('img');
+    const source = document.createElement('img');
 
     source.addEventListener('load', function () {
-        let width = this.naturalWidth;
-        let height = this.naturalHeight;
+        const width = this.naturalWidth;
+        const height = this.naturalHeight;
 
-        let canvas = document.createElement('canvas');
+        const canvas = document.createElement('canvas');
+
         canvas.width = width;
         canvas.height = height;
 
-        let context = canvas.getContext('2d');
+        const context = canvas.getContext('2d');
+
         context.drawImage(this, 0, 0);
 
-        let palette = [];
+        const palette = [];
 
         _.each(_.range(height), function (y) {
             _.each(_.range(width), function (x) {
-                let pixel = context.getImageData(x, y, 1, 1);
-                let data = pixel.data;
-                let color = new Color(data);
+                const pixel = context.getImageData(x, y, 1, 1);
+                const data = pixel.data;
+                const color = new Color(data);
 
                 palette.push(color);
             });
@@ -35,7 +36,7 @@ module.exports = function (src, callback) {
         callback({
             width: width,
             height: height,
-            palette: _.uniqBy(palette, d => d.hex()),
+            palette: Palette.cleanup(palette),
         });
     });
 
