@@ -1,6 +1,7 @@
 /* global $ */
 
 const doT = require('dot');
+const _ = require('lodash');
 
 const tabTemplate = doT.template(`<li>
     <a>
@@ -16,6 +17,21 @@ const WindowManager = function () {
     const windows = [];
 
     this.close = (win) => {
+        // open closest tab if closed one was active
+        if (win.$tab.hasClass('is-active')) {
+            const tabIndex = win.$tab.index();
+            var closestTab = tabIndex + 1;
+
+            if (tabIndex == windows.length-1) {
+                closestTab = tabIndex - 1;
+            }
+
+            this.open(_.nth(windows, closestTab));
+        }
+
+        // remove closed window from array
+        _.pull(windows, win);
+
         win.editor.destroy();
 
         win.$tab.remove();
@@ -54,6 +70,13 @@ const WindowManager = function () {
 
         $tab.on('click', '.delete', () => {
             this.close(win);
+        });
+
+        // close on middle mouse button click
+        $tab.on('mouseup', (e) => {
+            if (e.which == 2) {
+                this.close(win);
+            }
         });
 
         $tab.on('click', () => {
