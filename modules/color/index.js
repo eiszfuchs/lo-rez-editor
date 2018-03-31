@@ -9,7 +9,17 @@ const Color = function ([newRed, newGreen, newBlue, newAlpha]) {
     let alpha = newAlpha;
 
     let valid = true;
+
+    const identifiers = [];
     const references = [];
+
+    this.id = function (setId) {
+        identifiers.push(setId);
+    };
+
+    this.ids = function () {
+        return identifiers;
+    };
 
     this.invalidate = function () {
         valid = false;

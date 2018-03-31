@@ -74,6 +74,10 @@ const editorTemplate = doT.template(`<div>
             </div>
         </div>
 
+        <span class="spacer"></span>
+
+        <button class="js-repair button is-danger is-small">Repair</button>
+
         <button class="js-save button is-info is-small">Save</button>
     </div>
 </div>`);
@@ -93,6 +97,7 @@ const Editor = function (paneManager, zip) {
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
     const $save = $pane.find('.js-save');
+    const $repair = $pane.find('.js-repair');
     const $autopilot = $pane.find('.js-auto-pilot');
 
     let palette = [];
@@ -111,10 +116,13 @@ const Editor = function (paneManager, zip) {
             let index = 0;
 
             $editor.find('.cell').each(function () {
+                const $cell = $(this);
                 const color = pixels[index];
 
+                $cell.attr('data-legacy-color', color);
+
                 if (palette.hasOwnProperty(color)) {
-                    $(this).attr('data-color', color);
+                    $cell.attr('data-color', color);
                 }
 
                 index += 1;
@@ -524,6 +532,21 @@ const Editor = function (paneManager, zip) {
     };
 
     $save.on('click', self.save);
+
+    self.repair = function () {
+        $editor.find('.cell[data-legacy-color]').each(function () {
+            const $cell = $(this);
+            const legacyIndex = parseInt($cell.attr('data-legacy-color'), 10);
+            const paletteCandidates = palette.filter((d) =>
+                inArray(d.ids(), legacyIndex));
+
+            $cell.attr('data-color', getPaletteIndex(paletteCandidates[0]));
+            $cell.removeAttr('data-legacy-color');
+        }).end()
+            .trigger('refresh');
+    };
+
+    $repair.on('click', self.repair);
 
     self.getTab = () => zip.short;
 

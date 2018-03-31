@@ -19,6 +19,24 @@ module.exports = {
     cleanup: (colors) => {
         let palette = _.uniqBy(colors, (d) => d.hex());
 
+        for (let c = 0; c < palette.length; c += 1) {
+            palette[c].id(c);
+        }
+
+        let maxDifference = 0;
+
+        palette.forEach((color) => {
+            palette.forEach((compareColor) => {
+                maxDifference = Math.max(maxDifference,
+                    color.difference(compareColor));
+            });
+        });
+
+        // Not much variety to compress
+        if (maxDifference <= 15) {
+            return palette;
+        }
+
         while (thereAreNeighbors(palette)) {
             const neighborSets = palette.map(
                 (color) => [color, palette.filter(
@@ -39,6 +57,10 @@ module.exports = {
 
                 if (neighbors.length === maxNeighbors) {
                     neighbors.forEach((neighbor) => {
+                        neighbor.ids().forEach(
+                            (colorId) => color.id(colorId)
+                        );
+
                         neighbor.links().forEach(
                             (colorHex) => color.link(colorHex)
                         );
