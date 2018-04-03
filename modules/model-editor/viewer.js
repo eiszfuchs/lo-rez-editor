@@ -1,5 +1,3 @@
-/* jshint browser:true, jquery:true */
-
 'use strict';
 
 const _ = require('lodash');
@@ -11,32 +9,29 @@ const Color = require('../color');
 
 const painter = require('../painter');
 
-const width = 240; // to match texture editor: 160
-const height = 240; // to match texture editor: 160
+const VIEWER_WIDTH = 280;
+const VIEWER_HEIGHT = 240;
 
-let guideLineMaterial = new THREE.MeshBasicMaterial({ wireframe: true });
-var lineMaterial = new THREE.LineBasicMaterial({ color: 0x999999 });
+const guideLineMaterial = new THREE.MeshBasicMaterial({wireframe: true});
+const lineMaterial = new THREE.LineBasicMaterial({color: 0x999999});
 
 const resolveTextureUV = function (face, data, callback) {
     if (!_.has(face, 'uv')) {
         face.uv = [0, 0, 16, 16];
     }
 
-    let uvX1 = face.uv[0];
-    let uvY1 = face.uv[1];
-    let uvX2 = face.uv[2];
-    let uvY2 = face.uv[3];
+    const [uvX1, uvY1, uvX2, uvY2] = face.uv;
 
-    let minX = _.min([uvX1, uvX2]);
-    let minY = _.min([uvY1, uvY2]);
-    let maxX = _.max([uvX1, uvX2]);
-    let maxY = _.max([uvY1, uvY2]);
+    const minX = _.min([uvX1, uvX2]);
+    const minY = _.min([uvY1, uvY2]);
+    const maxX = _.max([uvX1, uvX2]);
+    const maxY = _.max([uvY1, uvY2]);
 
-    let width = Math.abs(maxX - minX);
-    let height = Math.abs(maxY - minY);
+    const width = Math.abs(maxX - minX);
+    const height = Math.abs(maxY - minY);
 
-    let imageCanvas = document.createElement('canvas');
-    let context = imageCanvas.getContext('2d');
+    const imageCanvas = document.createElement('canvas');
+    const context = imageCanvas.getContext('2d');
 
     imageCanvas.width = width;
     imageCanvas.height = height;
@@ -58,15 +53,15 @@ const resolveTextureUV = function (face, data, callback) {
         faceTexture = data.textures[faceTexture];
     }
 
-    let $img = $('<img />').on('load', function () {
-        let sourceCanvas = document.createElement('canvas');
-        let sourceWidth = this.naturalWidth;
-        let sourceHeight = this.naturalHeight;
+    const $img = $('<img />').on('load', function () {
+        const sourceCanvas = document.createElement('canvas');
+        const sourceWidth = this.naturalWidth;
+        const sourceHeight = this.naturalHeight;
 
         sourceCanvas.width = sourceWidth;
         sourceCanvas.height = sourceHeight;
 
-        let sourceContext = sourceCanvas.getContext('2d');
+        const sourceContext = sourceCanvas.getContext('2d');
 
         sourceContext.save();
         sourceContext.translate(sourceWidth / 2, sourceHeight / 2);
@@ -88,18 +83,21 @@ const resolveTextureUV = function (face, data, callback) {
         }
 
         let drawY = 0;
+
         _.each(uvYrange, function (y) {
             let drawX = 0;
 
             _.each(uvXrange, function (x) {
-                let pixel = sourceContext.getImageData(x, y, 1, 1);
-                let color = new Color(pixel.data);
+                const pixel = sourceContext.getImageData(x, y, 1, 1);
+                const color = new Color(pixel.data);
 
                 context.fillStyle = color.rgba();
-                context.fillRect(drawX++, drawY, 1, 1);
+                context.fillRect(drawX, drawY, 1, 1);
+
+                drawX += 1;
             });
 
-            drawY++;
+            drawY += 1;
         });
 
         callback(imageCanvas);
@@ -112,7 +110,7 @@ const resolveTextureUV = function (face, data, callback) {
 
 const getTextureMaterial = function (face, data, callback) {
     resolveTextureUV(face, data, function (textureUV) {
-        let textureCanvas = new THREE.CanvasTexture(textureUV);
+        const textureCanvas = new THREE.CanvasTexture(textureUV);
 
         textureCanvas.magFilter = THREE.NearestFilter;
         textureCanvas.minFilter = THREE.NearestFilter;
@@ -130,11 +128,11 @@ const getTextureMaterial = function (face, data, callback) {
 const letters = require('./alphabet.js');
 
 const addLetter = function (parent, letter) {
-    let letterElement = new THREE.Object3D();
+    const letterElement = new THREE.Object3D();
 
     if (_.has(letters, letter)) {
         _.each(letters[letter], function (line) {
-            let geometry = new THREE.Geometry();
+            const geometry = new THREE.Geometry();
 
             _.each(line, function (point) {
                 geometry.vertices.push(new THREE.Vector3(point[0], point[1], 0));
@@ -150,16 +148,16 @@ const addLetter = function (parent, letter) {
 };
 
 const addCube = function (parent, element, data) {
-    let from = new THREE.Vector3();
-    let to = new THREE.Vector3();
+    const from = new THREE.Vector3();
+    const to = new THREE.Vector3();
 
     from.fromArray(element.from);
     to.fromArray(element.to);
 
-    let min = new THREE.Vector3(_.min([from.x, to.x]), _.min([from.y, to.y]), _.min([from.z, to.z]));
-    let max = new THREE.Vector3(_.max([from.x, to.x]), _.max([from.y, to.y]), _.max([from.z, to.z]));
+    const min = new THREE.Vector3(_.min([from.x, to.x]), _.min([from.y, to.y]), _.min([from.z, to.z]));
+    const max = new THREE.Vector3(_.max([from.x, to.x]), _.max([from.y, to.y]), _.max([from.z, to.z]));
 
-    let planes = [];
+    const planes = [];
 
     // east
     if (_.has(element.faces, 'east')) {
@@ -223,8 +221,8 @@ const addCube = function (parent, element, data) {
 
     planes.forEach(function (planeStruct) {
         getTextureMaterial(planeStruct.f, data, function (material) {
-            let geometry = new THREE.PlaneGeometry(planeStruct.w, planeStruct.h);
-            let plane = new THREE.Mesh(geometry, material);
+            const geometry = new THREE.PlaneGeometry(planeStruct.w, planeStruct.h);
+            const plane = new THREE.Mesh(geometry, material);
 
             plane.position.x = planeStruct.p.x;
             plane.position.y = planeStruct.p.y;
@@ -238,24 +236,27 @@ const addCube = function (parent, element, data) {
     });
 };
 
-let Viewer = function () {
-    let self = this;
+const Viewer = function () {
+    const self = this;
 
-    let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, VIEWER_WIDTH / VIEWER_HEIGHT, 0.1, 1000);
+
     camera.position.x = camera.position.z = 20;
     camera.position.y = 16;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    let renderer = new THREE.WebGLRenderer({
-        // antialias: true
+    const renderer = new THREE.WebGLRenderer({
+        alpha: true,
     });
 
-    let pivot = new THREE.Object3D();
+    const pivot = new THREE.Object3D();
+
     scene.add(pivot);
 
-    let geometry = new THREE.PlaneGeometry(16, 16);
-    let basePlane = new THREE.Mesh(geometry, guideLineMaterial);
+    const geometry = new THREE.PlaneGeometry(16, 16);
+    const basePlane = new THREE.Mesh(geometry, guideLineMaterial);
+
     basePlane.position.y = -8;
     basePlane.rotation.x = π / +2;
     pivot.add(basePlane);
@@ -268,25 +269,30 @@ let Viewer = function () {
         return object;
     };
 
-    let xCaption = addLetter(pivot, 'X');
+    const xCaption = addLetter(pivot, 'X');
+
     xCaption.position.x = 18;
     xCaption.lookAt(new THREE.Vector3());
     center(xCaption);
 
-    let yCaption = addLetter(pivot, 'Y');
+    const yCaption = addLetter(pivot, 'Y');
+
     yCaption.position.y = 18;
     yCaption.lookAt(new THREE.Vector3());
     center(yCaption);
 
-    let zCaption = addLetter(pivot, 'Z');
+    const zCaption = addLetter(pivot, 'Z');
+
     zCaption.position.z = 18;
     zCaption.lookAt(new THREE.Vector3());
     center(zCaption);
 
-    let preview = new THREE.Object3D();
+    const preview = new THREE.Object3D();
+
     pivot.add(center(preview));
 
-    renderer.setSize(width, height);
+    renderer.setSize(VIEWER_WIDTH, VIEWER_HEIGHT);
+    renderer.setClearColor(0x000000, 0);
 
     let rendering = false;
     let dragging = false;
@@ -324,7 +330,7 @@ let Viewer = function () {
     };
 
     const clearPreview = function () {
-        for (let i = preview.children.length - 1; i >= 0; i--) {
+        for (let i = preview.children.length - 1; i >= 0; i -= 1) {
             preview.remove(preview.children[i]);
         }
     };
@@ -360,15 +366,15 @@ let Viewer = function () {
     };
 
     self.appendTo = function ($parent) {
-        let $dom = $(renderer.domElement);
+        const $dom = $(renderer.domElement);
 
-        let mouseMove = function (event) {
-            let moveDelta = new THREE.Vector2(
+        const mouseMove = function (event) {
+            const moveDelta = new THREE.Vector2(
                 event.offsetX - dragPosition.x,
                 event.offsetY - dragPosition.y
             );
 
-            let deltaQuaternion = new THREE.Quaternion()
+            const deltaQuaternion = new THREE.Quaternion()
                 .setFromEuler(new THREE.Euler(
                     moveDelta.y * (π / 180),
                     moveDelta.x * (π / 180),

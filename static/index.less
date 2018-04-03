@@ -110,10 +110,6 @@ aside {
         flex: 0 0 auto;
         margin: 0 5px;
     }
-
-    .spacer {
-        flex-grow: 1;
-    }
 }
 
 main {
@@ -144,6 +140,9 @@ main {
 
         flex-grow: 1;
         flex-shrink: 1;
+
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .pane {
@@ -267,6 +266,48 @@ form {
     background-position: center center;
 }
 
+.model-viewer {
+    background-image: url(is-space.png);
+    background-repeat: repeat;
+    background-position: top left;
+    background-attachment: fixed;
+
+    canvas {
+        display: block;
+
+        margin: 0 auto;
+    }
+}
+
+.model-editor {
+    .header {
+        display: flex;
+
+        background: #e8e8e8;
+        color: #aaaaaa;
+
+        padding: 5px 0;
+
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1em;
+
+        align-items: center;
+        justify-content: space-between;
+
+        > * {
+            flex: 0 0 auto;
+            margin: 0 5px;
+        }
+    }
+
+    &.changed {
+        .header {
+            color: @orange;
+        }
+    }
+}
+
 .editor-view {
     display: flex;
     flex-direction: column;
@@ -292,4 +333,8 @@ form {
             }
         }
     }
+}
+
+.spacer {
+    flex-grow: 1 !important;
 }

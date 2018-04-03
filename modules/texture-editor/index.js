@@ -563,6 +563,8 @@ const Editor = function (paneManager, zip) {
     return paneManager.add(self);
 };
 
+const appliesExpression = /textures\/(blocks|items).*\.png$/;
+
 Editor.applies = (entry) => {
     if (entry.entryName.indexOf('debug') >= 0) {
         return false;
@@ -576,7 +578,7 @@ Editor.applies = (entry) => {
         return false;
     }
 
-    return (/textures\/(blocks|items).*\.png$/).test(entry.entryName);
+    return appliesExpression.test(entry.entryName);
 };
 
 Editor.getListEntry = (paneOrganizer, zip, entry) => {
