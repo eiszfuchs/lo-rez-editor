@@ -244,7 +244,7 @@ const Viewer = function () {
 
     camera.position.x = camera.position.z = 20;
     camera.position.y = 16;
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    camera.lookAt(new THREE.Vector3(0, -1, 0));
 
     const renderer = new THREE.WebGLRenderer({
         alpha: true,
@@ -314,7 +314,7 @@ const Viewer = function () {
 
         // reset after dragging
         pivot.rotation.x = approx(pivot.rotation.x, 0);
-        pivot.rotation.y += 0.005;
+        pivot.rotation.y += 0.002;
         pivot.rotation.z = approx(pivot.rotation.z, 0);
     };
 

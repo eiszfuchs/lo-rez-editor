@@ -25,6 +25,12 @@ const entryTemplate = doT.template(`<li>
     {{=it.caption}}
 </li>`);
 
+const editorTemplate = doT.template(`<div class="ui-column">
+    <div class="model-viewer"></div>
+
+    <div class="model-editors rest"></div>
+</div>`);
+
 const aceRowTemplate = doT.template(`<div class="model-editor">
     <div class="header">
         <div>{{=it.header}}</div>
@@ -39,12 +45,6 @@ const aceRowTemplate = doT.template(`<div class="model-editor">
     <div class="js-editor" id="{{=it.id}}"></div>
 </div>`);
 
-const editorTemplate = doT.template(`<div>
-    <div class="model-viewer"></div>
-
-    <div class="editors"></div>
-</div>`);
-
 const Editor = function (paneManager, zip) {
     const self = this;
 
@@ -55,7 +55,7 @@ const Editor = function (paneManager, zip) {
     }));
 
     const $viewer = $pane.find('.model-viewer');
-    const $editors = $pane.find('.editors');
+    const $editors = $pane.find('.model-editors');
 
     const viewer = new Viewer();
 

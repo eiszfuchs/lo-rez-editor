@@ -4,6 +4,8 @@
 
 ![Screenshot of the texture editor](media/texture-editor.png)
 
+![Screenshot of the model editor](media/model-editor.png)
+
 
 ## Usage
 

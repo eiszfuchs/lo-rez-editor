@@ -102,6 +102,7 @@ aside {
 
 .ui-row {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
 
     margin: 0 -5px;
@@ -109,6 +110,19 @@ aside {
     > * {
         flex: 0 0 auto;
         margin: 0 5px;
+    }
+}
+
+.ui-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    margin: -5px 0;
+
+    > * {
+        flex: 0 0 auto;
+        margin: 5px 0;
     }
 }
 
@@ -140,9 +154,6 @@ main {
 
         flex-grow: 1;
         flex-shrink: 1;
-
-        overflow-x: hidden;
-        overflow-y: auto;
     }
 
     .pane {
@@ -279,9 +290,25 @@ form {
     }
 }
 
+.model-editors {
+    display: flex;
+    flex-direction: column;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
 .model-editor {
+    margin-bottom: 12px;
+
     .header {
         display: flex;
+
+        position: sticky;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 10;
 
         background: #e8e8e8;
         color: #aaaaaa;
@@ -304,6 +331,12 @@ form {
     &.changed {
         .header {
             color: @orange;
+        }
+    }
+
+    &.error {
+        .header {
+            color: @red;
         }
     }
 }
