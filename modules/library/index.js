@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs');
 const _ = require('lodash');
 
@@ -8,8 +6,8 @@ const newline = '\n';
 
 // http://jsonlines.org/
 const format = function (data) {
-    let storageKeys = _.keys(data).sort();
-    let lines = [];
+    const storageKeys = _.keys(data).sort();
+    const lines = [];
 
     // will save object sorted by keys
     _.each(storageKeys, function (d) {
@@ -24,22 +22,23 @@ const format = function (data) {
 };
 
 const parse = function (lines) {
-    let data = {};
+    const data = {};
 
     _.each(lines.split(newline), function (d) {
         if (!d) {
             return true;
         }
 
-        d = JSON.parse(d);
-        data[d.name] = d.value;
+        const parsed = JSON.parse(d);
+
+        data[parsed.name] = parsed.value;
     });
 
     return data;
 };
 
 module.exports = function (savePath) {
-    let self = this;
+    const self = this;
 
     let storage = {};
 
@@ -50,16 +49,18 @@ module.exports = function (savePath) {
     fs.readFile(savePath, encoding, function (error, data) {
         if (error) {
             console.error(error);
+
             return;
         }
 
         storage = parse(data);
     });
 
-    let save = _.throttle(function (callback) {
+    const save = _.throttle(function (callback) {
         fs.writeFile(savePath, format(storage), encoding, function (error) {
             if (error) {
                 console.error(error);
+
                 return;
             }
 

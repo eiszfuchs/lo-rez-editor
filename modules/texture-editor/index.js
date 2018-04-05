@@ -552,6 +552,10 @@ const Editor = function (paneManager, zip) {
 
     self.getPane = () => $pane;
 
+    self.activate = () => self;
+
+    self.deactivate = () => self;
+
     self.destroy = () => {
         $source.off();
         $palette.find('li').off();

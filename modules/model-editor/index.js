@@ -1,7 +1,5 @@
 /* global $ */
 
-'use strict';
-
 const encoding = 'utf8';
 
 const _ = require('lodash');
@@ -167,12 +165,19 @@ const Editor = function (paneManager, zip) {
         }
 
         update();
-        viewer.start();
     };
 
     self.getTab = () => zip.short;
 
     self.getPane = () => $pane;
+
+    self.activate = () => {
+        viewer.start();
+    };
+
+    self.deactivate = () => {
+        viewer.stop();
+    };
 
     self.destroy = () => {
         viewer.stop();

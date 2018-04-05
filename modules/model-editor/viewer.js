@@ -1,4 +1,4 @@
-'use strict';
+/* global $ */
 
 const _ = require('lodash');
 

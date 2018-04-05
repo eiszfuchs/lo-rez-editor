@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash');
 
 const isColorNeighbor = (color1, color2) => {

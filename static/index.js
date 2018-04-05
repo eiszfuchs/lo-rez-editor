@@ -121,13 +121,22 @@
             });
         }, 100));
 
-    $('#export').on('click', () => {
+    const $export = $('#export');
+
+    $export.on('click', () => {
+        $export.addClass('is-loading');
+
         if (ZipOrganizer.get() === null) {
             return false;
         }
 
-        Editors.forEach((Pane) => {
-            Pane.export();
+        _.defer(() => {
+            Editors.forEach((Pane) => {
+                // TODO: These are asynchronous, but do not return Promise
+                Pane.export();
+            });
+
+            $export.removeClass('is-loading');
         });
 
         return false;

@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash');
 
 const Color = function ([newRed, newGreen, newBlue, newAlpha]) {

@@ -1,5 +1,6 @@
 /* global $ */
 
+const _ = require('lodash');
 const doT = require('dot');
 
 const tabTemplate = doT.template(`<li>
@@ -14,17 +15,41 @@ const makeTab = (caption) => $(tabTemplate({caption}));
 
 const WindowManager = function () {
     const windows = [];
+    let openWindow = null;
 
     this.close = (win) => {
         win.editor.destroy();
 
         win.$tab.remove();
         win.$pane.remove();
+
+        const removeIndex = _.indexOf(windows, win);
+
+        _.pull(windows, win);
+
+        if (win === openWindow) {
+            if (windows.lenth > 0) {
+                const openIndex = windows[Math.min(windows.length - 1, removeIndex)];
+
+                this.open(_.nth(windows, openIndex));
+            }
+        }
     };
 
     this.open = (win) => {
+        if (win === openWindow) {
+            return;
+        }
+
+        if (openWindow) {
+            openWindow.editor.deactivate();
+        }
+
         win.$tab.addClass('is-active').siblings().removeClass('is-active');
         win.$pane.addClass('open').siblings().removeClass('open');
+
+        openWindow = win;
+        openWindow.editor.activate();
     };
 
     this.add = (editor) => {
@@ -38,6 +63,10 @@ const WindowManager = function () {
 
         if (!editor.hasOwnProperty('destroy')) {
             throw Error("Editor isn't able to pretend to free memory");
+        }
+
+        if (!editor.hasOwnProperty('activate') || !editor.hasOwnProperty('deactivate')) {
+            throw Error('Editor cannot be activated');
         }
 
         const $tab = makeTab(editor.getTab());
