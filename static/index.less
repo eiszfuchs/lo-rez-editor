@@ -128,6 +128,7 @@ aside {
 
 main {
     flex: 1 1 auto;
+    min-width: 0;
 
     display: flex;
     flex-direction: column;
@@ -187,6 +188,8 @@ form {
 
 #files {
     li {
+        position: relative;
+
         font-size: 0.75rem;
         margin-bottom: 0.15rem;
 
@@ -207,6 +210,28 @@ form {
 
         &.is-defined {
             color: @green;
+        }
+
+        // &.is-active {
+        //     font-style: italic;
+        //     font-weight: 600;
+        // }
+
+        &.is-open {
+            &:before {
+                position: absolute;
+                top: 0.625rem;
+                left: 0.25rem;
+                transform: translateY(-50%);
+
+                content: "";
+                display: block;
+
+                background: #fff;
+
+                width: 0.125rem;
+                height: 0.125rem;
+            }
         }
 
         &.has-null {

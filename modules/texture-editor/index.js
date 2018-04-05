@@ -550,7 +550,15 @@ const Editor = function (paneManager, zip) {
 
     self.getTab = () => zip.short;
 
+    self.removeTab = () => {
+        $('.tabs li:contains("' + self.getTab() + '")').remove();
+    };
+
     self.getPane = () => $pane;
+
+    self.removePane = () => {
+        self.getPane().remove();
+    };
 
     self.destroy = () => {
         $source.off();
@@ -595,7 +603,19 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
         caption: caption,
         short: caption.match(/[\w\-_]+\.\w+$/)[0],
     }).on('click', function () {
-        new Editor(paneOrganizer, $(this).prop('zip'));
+        const editor = new Editor(paneOrganizer, $(this).prop('zip'));
+
+        // check if file is already open...
+        if ($(this).hasClass('is-open')) {
+            // and if so, close it! òwó
+            $(this).removeClass('is-open');
+
+            editor.destroy();
+            editor.removePane();
+            editor.removeTab();
+        } else {
+          $(this).addClass('is-open');
+        }
     });
 };
 
