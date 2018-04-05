@@ -128,6 +128,7 @@ aside {
 
 main {
     flex: 1 1 auto;
+    min-width: 1px;
 
     display: flex;
     flex-direction: column;
@@ -135,6 +136,25 @@ main {
     > .tabs {
         margin-bottom: 0 !important;
         flex-shrink: 0;
+
+        ul {
+            flex: 1 0 auto;
+            max-width: 100%;
+        }
+
+        li {
+            flex: 0 1 auto;
+            min-width: 1px;
+        }
+
+        span {
+            flex: 1 0 1%;
+            min-width: 1px;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .delete {
             margin-left: 0.25rem;
