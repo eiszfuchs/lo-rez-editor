@@ -3,6 +3,7 @@
 
 @palette-color-size: 20px;
 
+@gray:      hsl(0,     0%, 50%);
 @orange:    hsl(14,  100%, 53%);
 @yellow:    hsl(48,  100%, 67%);
 @green:     hsl(141,  71%, 48%);
@@ -76,6 +77,23 @@ aside {
 
         overflow-x: hidden;
         overflow-y: scroll;
+    }
+}
+
+#replacement-progress {
+    position: relative;
+
+    .bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 0;
+        background-color: fadeout(@gray, 80%);
+    }
+
+    .content {
+        z-index: 1;
     }
 }
 

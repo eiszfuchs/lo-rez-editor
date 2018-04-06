@@ -26,12 +26,30 @@
     const $list = $('#files');
 
     const refreshList = () => {
-        $list.find('.list-entry').each(function () {
+        const $entries = $list.find('.list-entry');
+        const totalEntries = $entries.length;
+
+        let definedEntries = 0;
+
+        $entries.each(function () {
             const $entry = $(this);
             const properties = $entry.prop('zip');
 
             properties.editor.refreshListEntry(properties, $entry);
+
+            if ($entry.is('.is-defined, .is-ignored')) {
+                definedEntries += 1;
+            }
         });
+
+        const percentFinished = (definedEntries / totalEntries) * 100;
+
+        $('#replacement-progress')
+            .find('.bar')
+            .css('width', `${percentFinished}%`)
+            .end()
+            .find('.content strong')
+            .text(`${percentFinished.toFixed(1)}%`);
     };
 
     glob('versions/*.jar', function (error, files) {
