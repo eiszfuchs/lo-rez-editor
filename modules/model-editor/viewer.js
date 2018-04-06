@@ -13,6 +13,7 @@ const VIEWER_WIDTH = 280;
 const VIEWER_HEIGHT = 240;
 
 const guideLineMaterial = new THREE.MeshBasicMaterial({wireframe: true});
+const elementLineMaterial = new THREE.MeshBasicMaterial({wireframe: true, depthTest: false, color: 0xAAAAAA});
 const lineMaterial = new THREE.LineBasicMaterial({color: 0x999999});
 
 const resolveTextureUV = function (face, data, callback) {
@@ -234,6 +235,17 @@ const addCube = function (parent, element, data) {
             parent.add(plane);
         });
     });
+
+    const elementDimensions = max.sub(min);
+    const elementPosition = min.add(elementDimensions.clone().divideScalar(2));
+    const elementBox = new THREE.BoxGeometry(elementDimensions.x, elementDimensions.y, elementDimensions.z);
+    const elementMesh = new THREE.Mesh(elementBox, elementLineMaterial);
+
+    elementMesh.position.x = elementPosition.x;
+    elementMesh.position.y = elementPosition.y;
+    elementMesh.position.z = elementPosition.z;
+
+    parent.add(elementMesh);
 };
 
 const Viewer = function () {
