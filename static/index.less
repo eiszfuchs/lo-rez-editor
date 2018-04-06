@@ -181,6 +181,7 @@ main {
         flex-direction: column;
 
         flex: 1 1 auto;
+        max-width: 100%;
 
         padding: 8px;
 
@@ -223,6 +224,14 @@ form {
 
         &.hidden {
             display: none;
+        }
+
+        &.is-open {
+            // Show open resources even if filtered
+            display: block;
+
+            padding-left: 3px;
+            border-left: 3px solid @blue;
         }
 
         &.is-defined {
@@ -345,6 +354,14 @@ form {
         > * {
             flex: 0 0 auto;
             margin: 0 5px;
+
+            &:first-child {
+                flex: 1 1 1px;
+                min-width: 1px;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 

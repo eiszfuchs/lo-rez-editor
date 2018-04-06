@@ -18,6 +18,10 @@ const WindowManager = function () {
     let openWindow = null;
 
     this.close = (win) => {
+        if (win.$listEntry) {
+            win.$listEntry.removeClass('is-open');
+        }
+
         win.editor.destroy();
 
         win.$tab.remove();
@@ -52,7 +56,7 @@ const WindowManager = function () {
         openWindow.editor.activate();
     };
 
-    this.add = (editor) => {
+    this.add = (editor, $listEntry = null) => {
         if (!editor.hasOwnProperty('getTab')) {
             throw Error("Editor doesn't provide tab");
         }
@@ -79,6 +83,7 @@ const WindowManager = function () {
             editor,
             $tab,
             $pane,
+            $listEntry,
         };
 
         $tab.on('click', '.delete', () => {
@@ -89,9 +94,17 @@ const WindowManager = function () {
             this.open(win);
         });
 
+        if ($listEntry) {
+            $listEntry.addClass('is-open');
+        }
+
         windows.push(win);
         this.open(win);
     };
+
+    this.proxy = ($entry) => ({
+        add: (editor) => this.add(editor, $entry),
+    });
 
     return this;
 };

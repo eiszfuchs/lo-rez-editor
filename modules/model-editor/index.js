@@ -33,7 +33,6 @@ const aceRowTemplate = doT.template(`<div class="model-editor">
     <div class="header">
         <div>{{=it.header}}</div>
 
-        <span class="spacer"></span>
 
         <button class="js-restore button is-danger is-small">Restore</button>
 
@@ -202,7 +201,7 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
     const caption = entry.entryName
         .replace(/^\/?assets\/minecraft\/models\//, '');
 
-    return $(entryTemplate({
+    const $entry = $(entryTemplate({
         caption: caption,
         icon: 'fa fa-cube',
     })).prop('zip', {
@@ -211,9 +210,13 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
         editor: Editor,
         caption: caption,
         short: caption.match(/[\w\-_]+\.\w+$/)[0],
-    }).on('click', function () {
-        new Editor(paneOrganizer, $(this).prop('zip'));
     });
+
+    $entry.on('click', function () {
+        new Editor(paneOrganizer.proxy($entry), $(this).prop('zip'));
+    });
+
+    return $entry;
 };
 
 Editor.refreshListEntry = (properties, $entry) => {

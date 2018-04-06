@@ -589,7 +589,7 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
     const caption = entry.entryName
         .replace(/^\/?assets\/minecraft\/textures\//, '');
 
-    return $(entryTemplate({
+    const $entry = $(entryTemplate({
         caption: caption,
         icon: 'fa fa-square',
     })).prop('zip', {
@@ -598,9 +598,13 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
         editor: Editor,
         caption: caption,
         short: caption.match(/[\w\-_]+\.\w+$/)[0],
-    }).on('click', function () {
-        new Editor(paneOrganizer, $(this).prop('zip'));
     });
+
+    $entry.on('click', function () {
+        new Editor(paneOrganizer.proxy($entry), $(this).prop('zip'));
+    });
+
+    return $entry;
 };
 
 Editor.refreshListEntry = (properties, $entry) => {
