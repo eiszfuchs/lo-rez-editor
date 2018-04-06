@@ -8,6 +8,9 @@
     const ZipOrganizer = require('../modules/organizer')('zip');
     const PaneOrganizer = require('../modules/window-manager');
 
+    const Library = require('../modules/library');
+    const ignorance = new Library('lo-rez/ignorance.jsonl');
+
     const Editors = [];
 
     glob('modules/*-editor', function (error, files) {
@@ -25,6 +28,8 @@
     const $versionSelect = $('#versions');
     const $list = $('#files');
 
+    $list.data('ignorance', ignorance);
+
     const refreshList = () => {
         const $entries = $list.find('.list-entry');
         const totalEntries = $entries.length;
@@ -36,6 +41,10 @@
             const properties = $entry.prop('zip');
 
             properties.editor.refreshListEntry(properties, $entry);
+
+            const ignored = Boolean(ignorance.get(properties.entry.entryName));
+
+            $entry.toggleClass('is-ignored', ignored);
 
             if ($entry.is('.is-defined, .is-ignored')) {
                 definedEntries += 1;

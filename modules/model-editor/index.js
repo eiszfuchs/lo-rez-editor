@@ -33,6 +33,7 @@ const aceRowTemplate = doT.template(`<div class="model-editor">
     <div class="header">
         <div>{{=it.header}}</div>
 
+        <button class="js-ignore button is-info is-small">Ignore</button>
 
         <button class="js-restore button is-danger is-small">Restore</button>
 
@@ -50,6 +51,8 @@ const Editor = function (paneManager, zip) {
     const $pane = $(editorTemplate({
         source,
     }));
+
+    const ignorance = $('#files').data('ignorance');
 
     const $viewer = $pane.find('.model-viewer');
     const $editors = $pane.find('.model-editors');
@@ -156,6 +159,24 @@ const Editor = function (paneManager, zip) {
         $restoreButton.on('click', () => {
             editor.setValue(loadOriginalModelData(modelName));
         });
+
+        const $ignoreButton = $jsonEditor.find('.js-ignore');
+        const refreshIgnore = () => {
+            $ignoreButton.text('Ignore');
+
+            if (ignorance.get(modelName)) {
+                $ignoreButton.text('Unignore');
+            }
+        };
+
+        $ignoreButton.on('click', () => {
+            ignorance.set(modelName, !ignorance.get(modelName));
+            refreshIgnore();
+
+            $('#files').trigger('refresh');
+        });
+
+        refreshIgnore();
 
         const modelData = JSON.parse(modelDataJson);
 
