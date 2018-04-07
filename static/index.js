@@ -125,28 +125,30 @@
     $list
         .on('refresh', _.debounce(refreshList, 100));
 
-    $('#filter')
-        .on('keyup', _.debounce(function () {
-            const query = $(this).val();
+    const $filter = $('#filter');
 
-            if (!query) {
-                $list.find('li').removeClass('hidden');
+    const filterList = () => {
+        const fullQuery = $filter.val().trim();
+        const queries = fullQuery.split(/\s+/).map((d) => d.trim());
 
-                return;
+        $list.find('li').each(function () {
+            const $item = $(this);
+            const zip = $item.prop('zip');
+
+            let hidden = fullQuery !== '';
+
+            if (_.every(queries,
+                (query) => zip.entry.entryName.includes(query)
+            )) {
+                hidden = false;
             }
 
-            $list.find('li').each(function () {
-                const $item = $(this);
-                const zip = $item.prop('zip');
+            $item.toggleClass('hidden', hidden);
+        });
+    };
 
-                if (!zip) {
-                    return;
-                }
-
-                $item.toggleClass('hidden',
-                    !zip.entry.entryName.includes(query));
-            });
-        }, 100));
+    $filter
+        .on('keyup', _.debounce(filterList, 100));
 
     const $export = $('#export');
 
