@@ -5,6 +5,10 @@ const {app, BrowserWindow} = require('electron');
 // This basically makes the application portable.
 app.setPath('userData', `${__dirname}/.electron/`);
 
+// https://github.com/electron/electron/issues/8217
+// Model editor won't work on my old Macbook, haha
+app.commandLine.appendSwitch('ignore-gpu-blacklist');
+
 const fs = require('fs');
 const less = require('less');
 
