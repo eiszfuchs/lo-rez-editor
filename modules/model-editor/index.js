@@ -162,9 +162,14 @@ const Editor = function (paneManager, zip) {
 
         const $ignoreButton = $jsonEditor.find('.js-ignore');
         const refreshIgnore = () => {
-            $ignoreButton.text('Ignore');
+            const isIgnored = Boolean(ignorance.get(modelName));
+            const isSaved = Boolean(library.get(modelName));
 
-            if (ignorance.get(modelName)) {
+            $jsonEditor.toggleClass('is-ignored', isIgnored);
+            $jsonEditor.toggleClass('is-saved', isSaved);
+
+            $ignoreButton.text('Ignore');
+            if (isIgnored) {
                 $ignoreButton.text('Unignore');
             }
         };

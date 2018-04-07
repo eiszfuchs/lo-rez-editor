@@ -399,6 +399,26 @@ form {
             color: @red;
         }
     }
+
+    &.is-ignored {
+        .js-editor {
+            display: none;
+        }
+    }
+
+    &.is-saved {
+        .js-editor {
+            display: block;
+        }
+
+        .js-ignore {
+            opacity: 0.1;
+
+            &:hover {
+                opacity: 0.5;
+            }
+        }
+    }
 }
 
 .editor-view {
