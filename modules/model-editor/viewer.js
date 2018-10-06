@@ -248,6 +248,29 @@ const addCube = function (parent, element, data) {
     parent.add(elementMesh);
 };
 
+const addGrid = (parent) => {
+    const gridGeometry = new THREE.Geometry();
+
+    for (let z = 0; z <= 16; z += 2) {
+        for (let y = 0; y <= 16; y += 2) {
+            for (let x = 0; x <= 16; x += 2) {
+                if ((x !== 0 && x !== 16) && (y !== 0 && y !== 16) && (z !== 0 && z !== 16)) {
+                    continue;
+                }
+
+                const dot = new THREE.Vector3(x, y, z);
+
+                gridGeometry.vertices.push(dot);
+            }
+        }
+    }
+
+    const dotMaterial = new THREE.PointsMaterial({color: 0x666666, sizeAttenuation: false});
+    const dotField = new THREE.Points( gridGeometry, dotMaterial );
+
+    parent.add(dotField);
+};
+
 const Viewer = function () {
     const self = this;
 
@@ -360,6 +383,8 @@ const Viewer = function () {
         data.elements.forEach(function (element) {
             addCube(preview, element, data);
         });
+
+        addGrid(preview);
 
         return self;
     }, 100);
