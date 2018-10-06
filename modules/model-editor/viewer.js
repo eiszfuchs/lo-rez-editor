@@ -358,7 +358,8 @@ const Viewer = function () {
             requestAnimationFrame(render);
         }
 
-        update();
+        // Don't rotate for now
+        // update();
 
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
