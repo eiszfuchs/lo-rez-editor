@@ -271,6 +271,8 @@ const addGrid = (parent) => {
     parent.add(dotField);
 };
 
+let globalRotation = null;
+
 const Viewer = function () {
     const self = this;
 
@@ -330,36 +332,13 @@ const Viewer = function () {
     renderer.setClearColor(0x000000, 0);
 
     let rendering = false;
-    let dragging = false;
 
     let dragPosition;
-
-    const approx = function (value, target) {
-        value -= target;
-        value *= 0.95;
-        value += target;
-
-        return value;
-    };
-
-    const update = function () {
-        if (dragging) {
-            return;
-        }
-
-        // reset after dragging
-        pivot.rotation.x = approx(pivot.rotation.x, 0);
-        pivot.rotation.y += 0.002;
-        pivot.rotation.z = approx(pivot.rotation.z, 0);
-    };
 
     const render = function () {
         if (rendering) {
             requestAnimationFrame(render);
         }
-
-        // Don't rotate for now
-        // update();
 
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
@@ -391,6 +370,12 @@ const Viewer = function () {
     }, 100);
 
     self.start = function () {
+        if (globalRotation) {
+            pivot.rotation.x = globalRotation.x;
+            pivot.rotation.y = globalRotation.y;
+            pivot.rotation.z = globalRotation.z;
+        }
+
         rendering = true;
         render();
 
@@ -433,12 +418,12 @@ const Viewer = function () {
         $dom.on('mousedown', function (event) {
             dragPosition = new THREE.Vector2(event.offsetX, event.offsetY);
 
-            dragging = true;
             $dom.on('mousemove', mouseMove);
         });
 
         $(document).on('mouseup', function () {
-            dragging = false;
+            globalRotation = pivot.rotation.clone();
+
             $dom.off('mousemove', mouseMove);
         });
 
