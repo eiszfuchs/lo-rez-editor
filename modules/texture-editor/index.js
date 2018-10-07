@@ -601,6 +601,10 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
     });
 
     $entry.on('click', function () {
+        if ($entry.is('.is-open')) {
+            return;
+        }
+
         new Editor(paneOrganizer.proxy($entry), $(this).prop('zip'));
     });
 
