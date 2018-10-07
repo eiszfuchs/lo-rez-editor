@@ -11,6 +11,18 @@ require('../organizer')('texture').set(library);
 const Color = require('../color');
 const Palette = require('../palette');
 
+require('c-p');
+let globalTransparencyColor = '#ff00ff';
+
+const updateTransparencyColor = () => {
+    $('head style.colors').remove();
+    $('<style class="colors" />').text(`
+        :root {
+            --transparency-color: ${globalTransparencyColor};
+        }
+    `).appendTo('head');
+};
+
 const viewScale = 12;
 const sourcePreviewScale = 2;
 const targetDivider = 2;
@@ -42,7 +54,9 @@ const editorTemplate = doT.template(`<div>
         <div class="buttons has-addons">
             <span class="button is-small" data-transparency="a"></span>
             <span class="button is-small" data-transparency="b"></span>
-            <span class="button is-small" data-transparency="c"></span>
+            <div class="button is-small" data-transparency="c">
+                <div class="js-color-picker color-picker-parent"></div>
+            </div>
         </div>
 
         <span class="spacer"></span>
@@ -565,7 +579,31 @@ const Editor = function (paneManager, zip) {
 
     self.getPane = () => $pane;
 
-    self.activate = () => self;
+    let colorPicker;
+
+    self.activate = () => {
+        if (colorPicker) {
+            return;
+        }
+
+        const $pickerContainer = $pane.find('.js-color-picker');
+        const $pickerInput = $pickerContainer.parent();
+
+        colorPicker = new CP($pickerInput[0], 'click', $pickerContainer[0]);
+
+        colorPicker.on('change', function (color) {
+            globalTransparencyColor = `#${color}`;
+            updateTransparencyColor();
+        });
+
+        colorPicker.fit = function () {
+            this.self.style.left = this.self.style.top = '';
+        };
+
+        colorPicker.set(globalTransparencyColor);
+
+        return self;
+    };
 
     self.deactivate = () => self;
 

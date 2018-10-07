@@ -1,5 +1,6 @@
 @import url(../node_modules/font-awesome/css/font-awesome.css);
 @import url(../node_modules/bulma/css/bulma.css);
+@import url(../node_modules/c-p/color-picker.css);
 
 @palette-color-size: 20px;
 
@@ -13,6 +14,9 @@
 @purple:    hsl(271, 100%, 71%);
 @red:       hsl(348, 100%, 61%);
 
+:root {
+    --transparency-color: #ff00ff;
+}
 
 .transparency,
 .transparency-a {
@@ -31,7 +35,7 @@
 
 .transparency-c {
     background-image: none;
-    background-color: #ff00ff;
+    background-color: var(--transparency-color);
 }
 
 .transparencies() {
@@ -45,6 +49,15 @@
 
     [data-transparency="c"] & {
         .transparency-c();
+    }
+}
+
+.color-picker-parent {
+    position: relative;
+
+    .color-picker {
+        top: auto;
+        bottom: 0;
     }
 }
 
