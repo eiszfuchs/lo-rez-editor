@@ -30,6 +30,8 @@ const compile = (filename, callback) => {
 
         less.render(data, {}, (renderError, output) => {
             if (renderError) {
+                console.error(renderError);
+
                 return;
             }
 

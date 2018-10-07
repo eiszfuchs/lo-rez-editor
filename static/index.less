@@ -14,11 +14,38 @@
 @red:       hsl(348, 100%, 61%);
 
 
-.transparency {
+.transparency,
+.transparency-a {
     background-image: url(is-transparent.png);
     background-repeat: repeat;
     background-position: top left;
     background-attachment: fixed;
+}
+
+.transparency-b {
+    background-image: url(is-space.png);
+    background-repeat: repeat;
+    background-position: top left;
+    background-attachment: fixed;
+}
+
+.transparency-c {
+    background-image: none;
+    background-color: #ff00ff;
+}
+
+.transparencies() {
+    [data-transparency="a"] & {
+        .transparency-a();
+    }
+
+    [data-transparency="b"] & {
+        .transparency-b();
+    }
+
+    [data-transparency="c"] & {
+        .transparency-c();
+    }
 }
 
 .bordered {
@@ -49,7 +76,8 @@ img {
 .editor-view {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 
-    .transparency;
+    .transparency();
+    .transparencies();
 }
 
 aside {
@@ -129,6 +157,11 @@ aside {
         flex: 0 0 auto;
         margin: 0 5px;
     }
+
+    .buttons,
+    .buttons .button {
+        margin-bottom: 0;
+    }
 }
 
 .ui-column {
@@ -143,6 +176,23 @@ aside {
         margin: 5px 0;
     }
 }
+
+.button[data-transparency] {
+    width: 3 * 0.75em;
+
+    &[data-transparency="a"] {
+        .transparency-a();
+    }
+
+    &[data-transparency="b"] {
+        .transparency-b();
+    }
+
+    &[data-transparency="c"] {
+        .transparency-c();
+    }
+}
+
 
 main {
     flex: 1 1 auto;
@@ -286,7 +336,8 @@ form {
 
         box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 
-        .transparency;
+        .transparency();
+        .transparencies();
 
         b {
             display: block;
@@ -315,7 +366,8 @@ form {
 .previews {
     padding: 0;
 
-    .transparency;
+    .transparency();
+    .transparencies();
 
     overflow: hidden;
 

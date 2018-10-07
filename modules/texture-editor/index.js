@@ -39,6 +39,14 @@ const editorTemplate = doT.template(`<div>
     </div>
 
     <div class="ui-row">
+        <div class="buttons has-addons">
+            <span class="button is-small" data-transparency="a"></span>
+            <span class="button is-small" data-transparency="b"></span>
+            <span class="button is-small" data-transparency="c"></span>
+        </div>
+
+        <span class="spacer"></span>
+
         <div class="js-auto-pilot dropdown is-up">
             <div class="dropdown-trigger">
                 <button class="button is-small">
@@ -265,6 +273,11 @@ const Editor = function (paneManager, zip) {
 
     $(document).on('mouseup', function () {
         drawing = false;
+    });
+
+    $pane.attr('data-transparency', 'a');
+    $pane.on('click', '[data-transparency]', function () {
+        $pane.attr('data-transparency', $(this).attr('data-transparency'));
     });
 
     $editor.on('refresh', _.throttle(() => {
