@@ -1,8 +1,11 @@
 {
   "name": "lo-rez-editor",
   "version": "0.0.2",
-  "main": "main.js",
   "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
   "devDependencies": {
     "electron": "3.0.3"
   },

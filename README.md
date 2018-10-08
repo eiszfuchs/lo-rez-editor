@@ -16,5 +16,5 @@ The idea is that you clone the [*lo-rez*](https://github.com/eiszfuchs/lo-rez) r
 
 ```bash
 npm install # or yarn
-./node_modules/.bin/electron .
+npm start
 ```

@@ -37,6 +37,8 @@ const compile = (filename, callback) => {
 
             fs.writeFile(target, output.css, 'utf8', (writeError) => {
                 if (writeError) {
+                    console.error(writeError);
+
                     return;
                 }
 
@@ -79,7 +81,7 @@ app.on('ready', () => {
             },
         });
 
-        mainWindow.loadURL(`file://${__dirname}/views/index.html`);
+        mainWindow.loadFile('views/index.html');
         // mainWindow.webContents.openDevTools();
 
         mainWindow.on('closed', () => {

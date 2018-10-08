@@ -1,4 +1,4 @@
-/* global $ */
+/* global $, CP */
 
 const _ = require('lodash');
 const doT = require('dot');
@@ -703,7 +703,7 @@ Editor.export = () => {
             const data = painter(result, d)
                 .replace(/^data:image\/\w+;base64,/, '');
 
-            const buffer = new Buffer(data, 'base64');
+            const buffer = Buffer.from(data, 'base64');
 
             fs.writeFile(assetFilename, buffer, (error) => {
                 if (error) {

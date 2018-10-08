@@ -261,7 +261,7 @@ const fs = require('fs');
 
 Editor.export = function () {
     library.each(function (data, entryName) {
-        const buffer = new Buffer(data, encoding);
+        const buffer = Buffer.from(data, encoding);
 
         fs.writeFile(`lo-rez/${entryName}`, buffer, function (error) {
             if (error) {
