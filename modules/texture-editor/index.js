@@ -11,6 +11,8 @@ require('../organizer')('texture').set(library);
 const Color = require('../color');
 const Palette = require('../palette');
 
+const Clipboard = require('../organizer')('texture/clipboard');
+
 require('c-p');
 let globalTransparencyColor = '#ff00ff';
 
@@ -96,6 +98,33 @@ const editorTemplate = doT.template(`<div>
             </div>
         </div>
 
+        <div class="js-texture-tools dropdown is-up">
+            <div class="dropdown-trigger">
+                <button class="button is-small">
+                    <span>Tools</span>
+                    <span class="icon is-small">
+                        <i class="fa fa-angle-down"></i>
+                    </span>
+                </button>
+            </div>
+
+            <div class="dropdown-menu">
+                <div class="dropdown-content">
+                    <a class="dropdown-item" data-tool="copy">
+                        Copy
+                    </a>
+
+                    <a class="dropdown-item" data-tool="paste-color">
+                        Paste color
+                    </a>
+
+                    <a class="dropdown-item" data-tool="paste-indices">
+                        Paste indices
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <span class="spacer"></span>
 
         <button class="js-repair button is-danger is-small">Repair</button>
@@ -121,6 +150,7 @@ const Editor = function (paneManager, zip) {
     const $save = $pane.find('.js-save');
     const $repair = $pane.find('.js-repair');
     const $autopilot = $pane.find('.js-auto-pilot');
+    const $tools = $pane.find('.js-texture-tools');
 
     let palette = [];
     let selectedColor = null;
@@ -471,7 +501,10 @@ const Editor = function (paneManager, zip) {
 
     $autopilot
         .on('click', function () {
-            $(this).toggleClass('is-active');
+            $(this)
+                .toggleClass('is-active')
+                .siblings()
+                .removeClass('is-active');
         })
         .on('click', '[data-method="nearest"]', function () {
             $editor.find('.cell').each(function () {
@@ -548,6 +581,39 @@ const Editor = function (paneManager, zip) {
                 .trigger('refresh');
         });
 
+    $tools
+        .on('click', function () {
+            $(this)
+                .toggleClass('is-active')
+                .siblings()
+                .removeClass('is-active');
+        })
+        .on('click', '[data-tool="paste-color"]', () => {
+            const pastedPixels = Clipboard.get().colors;
+
+            self.pixels(
+                pastedPixels.map((c) =>
+                    getPaletteIndex(
+                        _.sortBy(_.clone(palette), (d) => d.distance(c))[0]
+                    )
+                )
+            );
+        })
+        .on('click', '[data-tool="paste-indices"]', () => {
+            const pastedPixels = Clipboard.get().pixels;
+
+            self.pixels(pastedPixels);
+        })
+        .on('click', '[data-tool="copy"]', () => {
+            Clipboard.set({
+                width: editorWidth,
+                height: editorHeight,
+
+                pixels: self.pixels(),
+                colors: self.pixels().map((d) => palette[d]),
+            });
+        });
+
     self.save = function () {
         $save.addClass('is-loading');
 
@@ -613,6 +679,7 @@ const Editor = function (paneManager, zip) {
         $editor.off();
         $save.off();
         $autopilot.off();
+        $tools.off();
     };
 
     return paneManager.add(self);
