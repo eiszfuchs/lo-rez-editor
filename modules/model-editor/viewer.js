@@ -28,8 +28,15 @@ const resolveTextureUV = function (face, data, callback) {
     const maxX = _.max([uvX1, uvX2]);
     const maxY = _.max([uvY1, uvY2]);
 
-    const width = Math.abs(maxX - minX);
-    const height = Math.abs(maxY - minY);
+    let width = Math.abs(maxX - minX);
+    let height = Math.abs(maxY - minY);
+
+    // TODO: This is more accurate, but still doesn't actually rotate
+    if (_.has(face, 'rotation')) {
+        if (face.rotation === 90 || face.rotation === 270) {
+            [width, height] = [height, width];
+        }
+    }
 
     const imageCanvas = document.createElement('canvas');
     const context = imageCanvas.getContext('2d');
@@ -66,9 +73,6 @@ const resolveTextureUV = function (face, data, callback) {
 
         sourceContext.save();
         sourceContext.translate(sourceWidth / 2, sourceHeight / 2);
-        if (_.has(face, 'rotation')) {
-            sourceContext.rotate(face.rotation * π / -180);
-        }
         sourceContext.drawImage(this, sourceWidth / -2, sourceHeight / -2);
         sourceContext.restore();
 
@@ -81,6 +85,13 @@ const resolveTextureUV = function (face, data, callback) {
 
         if (uvY2 === minY) {
             uvYrange = uvYrange.reverse();
+        }
+
+        // TODO: This is more accurate, but still doesn't actually rotate
+        if (_.has(face, 'rotation')) {
+            if (face.rotation === 90 || face.rotation === 270) {
+                [uvXrange, uvYrange] = [uvYrange, uvXrange];
+            }
         }
 
         let drawY = 0;
