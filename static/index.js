@@ -87,6 +87,18 @@
             ZipOrganizer.set(zip);
             $list.html('');
 
+            let packFormat = 3;
+            const packMeta = zip.getEntry('pack.mcmeta');
+
+            if (packMeta) {
+                const packMetaData = packMeta.getData().toString('utf8');
+                const packData = JSON.parse(packMetaData);
+
+                packFormat = packData.pack.pack_format || packFormat;
+            }
+
+            window.GlobalValues.packFormat = packFormat;
+
             zip.getEntries().sort((a, b) => {
                 if (a.entryName > b.entryName) {
                     return 1;

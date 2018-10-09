@@ -12,3 +12,4 @@ require('electron').ipcRenderer.on('css', (event, message) => {
 
 window.$ = $;
 window.panes = [];
+window.GlobalValues = {};

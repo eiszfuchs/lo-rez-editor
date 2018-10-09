@@ -685,9 +685,15 @@ const Editor = function (paneManager, zip) {
     return paneManager.add(self);
 };
 
-const appliesExpression = /textures\/(blocks|items).*\.png$/;
-
 Editor.applies = (entry) => {
+    let appliesExpression;
+
+    if (window.GlobalValues.packFormat === 3) {
+        appliesExpression = /textures\/(blocks|items).*\.png$/;
+    } else if (window.GlobalValues.packFormat === 4) {
+        appliesExpression = /textures\/(block|item).*\.png$/;
+    }
+
     if (entry.entryName.indexOf('debug') >= 0) {
         return false;
     }

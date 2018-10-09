@@ -266,7 +266,7 @@ const addGrid = (parent) => {
     }
 
     const dotMaterial = new THREE.PointsMaterial({color: 0x666666, sizeAttenuation: false});
-    const dotField = new THREE.Points( gridGeometry, dotMaterial );
+    const dotField = new THREE.Points(gridGeometry, dotMaterial);
 
     parent.add(dotField);
 };
