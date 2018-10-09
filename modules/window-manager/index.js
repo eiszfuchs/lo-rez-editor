@@ -94,6 +94,13 @@ const WindowManager = function () {
             this.open(win);
         });
 
+        $tab.on('mouseup', (event) => {
+            // Middle mouse button
+            if (event.which === 2) {
+                this.close(win);
+            }
+        });
+
         if ($listEntry) {
             $listEntry.addClass('is-open');
         }
