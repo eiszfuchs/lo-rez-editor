@@ -120,16 +120,19 @@ const Editor = function (paneManager, zip) {
         $editors.prepend($jsonEditor);
 
         const editor = ace.edit(editorId);
+        const session = editor.getSession();
 
         editor.setTheme('ace/theme/github');
         editor.setOptions({
             maxLines: Infinity,
+            showInvisibles: true,
         });
 
-        const session = editor.getSession();
-
-        session.setMode('ace/mode/json');
-        session.setUseWrapMode(true);
+        session.setOptions({
+            mode: 'ace/mode/json',
+            newLineMode: 'unix',
+            useSoftTabs: true,
+        });
 
         editor.on('change', function () {
             $jsonEditor.addClass('changed');
