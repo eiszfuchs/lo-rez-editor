@@ -320,20 +320,28 @@ const Viewer = function () {
     const xCaption = addLetter(pivot, 'X');
 
     xCaption.position.x = 18;
-    xCaption.lookAt(new THREE.Vector3());
+    // xCaption.lookAt(new THREE.Vector3());
     center(xCaption);
 
     const yCaption = addLetter(pivot, 'Y');
 
     yCaption.position.y = 18;
-    yCaption.lookAt(new THREE.Vector3());
+    // yCaption.lookAt(new THREE.Vector3());
     center(yCaption);
 
     const zCaption = addLetter(pivot, 'Z');
 
     zCaption.position.z = 18;
-    zCaption.lookAt(new THREE.Vector3());
+    // zCaption.lookAt(new THREE.Vector3());
     center(zCaption);
+
+    const orientAxisCaptions = () => {
+        xCaption.lookAt(camera.position);
+        yCaption.lookAt(camera.position);
+        zCaption.lookAt(camera.position);
+    };
+
+    orientAxisCaptions();
 
     const preview = new THREE.Object3D();
 
@@ -423,6 +431,8 @@ const Viewer = function () {
                 ));
 
             pivot.quaternion.multiplyQuaternions(deltaQuaternion, pivot.quaternion);
+
+            orientAxisCaptions();
 
             dragPosition.x = event.offsetX;
             dragPosition.y = event.offsetY;
