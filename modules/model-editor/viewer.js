@@ -399,6 +399,12 @@ const Viewer = function () {
         return self;
     };
 
+    self.destroy = function () {
+        self.stop();
+
+        renderer.dispose();
+    };
+
     self.appendTo = function ($parent) {
         const $dom = $(renderer.domElement);
 

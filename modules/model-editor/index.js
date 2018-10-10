@@ -203,7 +203,7 @@ const Editor = function (paneManager, zip) {
     };
 
     self.destroy = () => {
-        viewer.stop();
+        viewer.destroy();
     };
 
     _.defer(buildEditor);
