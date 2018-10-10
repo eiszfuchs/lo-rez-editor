@@ -166,6 +166,9 @@ const addCube = function (parent, element, data) {
     from.fromArray(element.from);
     to.fromArray(element.to);
 
+    const pivot = new THREE.Object3D();
+    const anchor = new THREE.Object3D();
+
     const min = new THREE.Vector3(_.min([from.x, to.x]), _.min([from.y, to.y]), _.min([from.z, to.z]));
     const max = new THREE.Vector3(_.max([from.x, to.x]), _.max([from.y, to.y]), _.max([from.z, to.z]));
 
@@ -243,9 +246,11 @@ const addCube = function (parent, element, data) {
             plane.rotation.y = planeStruct.r.y;
             plane.rotation.z = planeStruct.r.z;
 
-            parent.add(plane);
+            anchor.add(plane);
         });
     });
+
+    pivot.add(anchor);
 
     const elementDimensions = max.sub(min);
     const elementPosition = min.add(elementDimensions.clone().divideScalar(2));
@@ -256,7 +261,24 @@ const addCube = function (parent, element, data) {
     elementMesh.position.y = elementPosition.y;
     elementMesh.position.z = elementPosition.z;
 
-    parent.add(elementMesh);
+    anchor.add(elementMesh);
+
+    // TODO: "rescale": true
+    if (_.has(element, 'rotation')) {
+        const rotation = element.rotation;
+        const axisCall = `rotate${rotation.axis.toUpperCase()}`;
+
+        const origin = new THREE.Vector3();
+
+        origin.fromArray(rotation.origin);
+
+        anchor.position.sub(origin);
+        pivot.position.add(origin);
+
+        pivot[axisCall](rotation.angle * (π / 180));
+    }
+
+    parent.add(pivot);
 };
 
 const addGrid = (parent) => {
