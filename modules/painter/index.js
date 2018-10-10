@@ -36,6 +36,13 @@ const TextureOrganizer = organize('texture');
 paint.resolveTexture = function (textureName, callback) {
     const entryName = `assets/minecraft/textures/${textureName}.png`;
     const entry = ZipOrganizer.get().getEntry(entryName);
+
+    if (!entry) {
+        console.warn(`No such texture: ${textureName}`);
+
+        return callback('');
+    }
+
     const src = `data:image/png;base64,${entry.getData().toString('base64')}`;
 
     if (TextureOrganizer.get().has(entryName)) {

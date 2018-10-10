@@ -1,15 +1,10 @@
-/* global $ */
+/* global $, ace */
 
 const encoding = 'utf8';
 
 const _ = require('lodash');
 const doT = require('dot');
 const extendDeep = require('deep-extend');
-
-const ace = require('brace');
-
-require('brace/mode/json');
-require('brace/theme/github');
 
 const Library = require('../library');
 const library = new Library('lo-rez/models.jsonl');

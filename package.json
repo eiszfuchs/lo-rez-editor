@@ -10,8 +10,8 @@
     "electron": "3.0.3"
   },
   "dependencies": {
+    "ace-builds": "1.4.1",
     "adm-zip": "0.4.11",
-    "brace": "0.11.1",
     "bulma": "0.7.1",
     "c-p": "1.4.0",
     "deep-extend": "0.6.0",
