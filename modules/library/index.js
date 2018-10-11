@@ -37,8 +37,10 @@ const parse = function (lines) {
     return data;
 };
 
-module.exports = function (savePath) {
+module.exports = function (savePath, options = {}) {
     const self = this;
+
+    const {cleanup} = options;
 
     let storage = {};
 
@@ -57,6 +59,10 @@ module.exports = function (savePath) {
     });
 
     const save = _.throttle(function (callback) {
+        if (cleanup) {
+            storage = _.pickBy(storage, cleanup);
+        }
+
         fs.writeFile(savePath, format(storage), encoding, function (error) {
             if (error) {
                 console.error(error);

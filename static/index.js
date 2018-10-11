@@ -9,7 +9,9 @@
     const PaneOrganizer = require('../modules/window-manager');
 
     const Library = require('../modules/library');
-    const ignorance = new Library('lo-rez/ignorance.jsonl');
+    const ignorance = new Library('lo-rez/ignorance.jsonl', {
+        cleanup: (value) => value,
+    });
 
     const Editors = [];
 
