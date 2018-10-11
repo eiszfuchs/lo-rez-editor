@@ -432,7 +432,7 @@ const Viewer = function () {
     self.destroy = function () {
         self.stop();
 
-        renderer.dispose();
+        renderer.forceContextLoss();
     };
 
     self.appendTo = function ($parent) {
