@@ -49,6 +49,8 @@ paint.resolveTexture = function (textureName, callback) {
         extractor(src, function (result) {
             callback(paint(result, TextureOrganizer.get().get(entryName), 2));
         });
+
+        return;
     }
 
     callback(src);

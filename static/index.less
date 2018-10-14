@@ -4,6 +4,8 @@
 
 @palette-color-size: 20px;
 
+@white:     hsl(0,     0%, 100%);
+@gray:      hsl(0,     0%, 50%);
 @gray:      hsl(0,     0%, 50%);
 @orange:    hsl(14,  100%, 53%);
 @yellow:    hsl(48,  100%, 67%);
@@ -243,7 +245,7 @@ main {
     }
 
     > section {
-        .bordered;
+        .bordered();
 
         border-top-width: 0;
         border-top-left-radius: 0;
@@ -394,16 +396,17 @@ form {
     background-position: center center;
 }
 
-.model-viewer {
-    background-image: url(is-space.png);
-    background-repeat: repeat;
-    background-position: top left;
-    background-attachment: fixed;
+.model-view {
+    .transparency-b();
+
+    min-width: 240px;
+    height: 240px;
 
     canvas {
         display: block;
 
-        margin: 0 auto;
+        width: 100%;
+        height: 100%;
     }
 }
 
@@ -508,6 +511,92 @@ form {
 
             &:hover {
                 box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+            }
+        }
+    }
+}
+
+.model-layers {
+    flex-direction: column;
+    align-items: flex-start;
+
+    max-height: 240px;
+    overflow: auto;
+
+    .layer {
+        width: 100%;
+        flex: 0 0 auto;
+
+        display: flex;
+        overflow: hidden;
+
+        align-items: center;
+
+        font-size: 11px;
+        line-height: 16px;
+
+        margin-top: 1px;
+        margin-bottom: 1px;
+
+        .bordered();
+        padding: 5px;
+
+        > * {
+            flex: 0 0 auto;
+            margin-right: 5px;
+        }
+    }
+
+    .vec3 {
+        font-family: Iosevka, monospace;
+        font-weight: 400;
+
+        flex-grow: 1;
+
+        display: flex;
+        flex-direction: column;
+
+        > * {
+            flex: 0 0 auto;
+        }
+
+        .error {
+            font-weight: bold;
+
+            color: @white;
+            background-color: @red;
+        }
+    }
+
+    .face {
+        .transparency();
+
+        margin-left: 1px;
+        margin-right: 1px;
+
+        position: relative;
+
+        img {
+            width: 16px * 2;
+            min-width: 16px * 2;
+            height: 16px * 2;
+        }
+
+        .uv {
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            opacity: 0.85;
+        }
+
+        &.hidden {
+            visibility: hidden;
+        }
+
+        &:hover {
+            .uv {
+                opacity: 0.0;
             }
         }
     }

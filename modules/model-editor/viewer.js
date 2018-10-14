@@ -1,141 +1,23 @@
 /* global $ */
 
 const _ = require('lodash');
+const doT = require('dot');
 
 const THREE = require('three');
 const π = Math.PI;
 
-const Color = require('../color');
-
-const painter = require('../painter');
-
-const VIEWER_WIDTH = 280;
-const VIEWER_HEIGHT = 240;
+const Resolver = require('./resolver.js');
+const Layers = require('./layers.js');
 
 const guideLineMaterial = new THREE.MeshBasicMaterial({wireframe: true});
 const elementLineMaterial = new THREE.MeshBasicMaterial({wireframe: true, depthTest: false, color: 0xAAAAAA});
 const lineMaterial = new THREE.LineBasicMaterial({color: 0x999999});
 
-const resolveTextureUV = function (face, data, callback) {
-    if (!_.has(face, 'uv')) {
-        face.uv = [0, 0, 16, 16];
-    }
+const viewerTemplate = doT.template(`<div class="ui-row">
+    <div class="model-view rest"></div>
 
-    const [uvX1, uvY1, uvX2, uvY2] = face.uv;
-
-    const minX = _.min([uvX1, uvX2]);
-    const minY = _.min([uvY1, uvY2]);
-    const maxX = _.max([uvX1, uvX2]);
-    const maxY = _.max([uvY1, uvY2]);
-
-    let width = Math.abs(maxX - minX);
-    let height = Math.abs(maxY - minY);
-
-    // TODO: This is more accurate, but still doesn't actually rotate
-    if (_.has(face, 'rotation')) {
-        if (face.rotation === 90 || face.rotation === 270) {
-            [width, height] = [height, width];
-        }
-    }
-
-    const imageCanvas = document.createElement('canvas');
-    const context = imageCanvas.getContext('2d');
-
-    imageCanvas.width = width;
-    imageCanvas.height = height;
-
-    context.clearRect(0, 0, width, height);
-
-    let faceTexture = face.texture;
-
-    while (faceTexture.startsWith('#')) {
-        faceTexture = faceTexture.replace('#', '');
-        if (!_.has(data.textures, faceTexture)) {
-            // create dummy image here
-
-            callback(imageCanvas);
-
-            return;
-        }
-
-        faceTexture = data.textures[faceTexture];
-    }
-
-    const $img = $('<img />').on('load', function () {
-        const sourceCanvas = document.createElement('canvas');
-        const sourceWidth = this.naturalWidth;
-        const sourceHeight = this.naturalHeight;
-
-        sourceCanvas.width = sourceWidth;
-        sourceCanvas.height = sourceHeight;
-
-        const sourceContext = sourceCanvas.getContext('2d');
-
-        sourceContext.save();
-        sourceContext.translate(sourceWidth / 2, sourceHeight / 2);
-        sourceContext.drawImage(this, sourceWidth / -2, sourceHeight / -2);
-        sourceContext.restore();
-
-        let uvXrange = _.range(minX, maxX);
-        let uvYrange = _.range(minY, maxY);
-
-        if (uvX2 === minX) {
-            uvXrange = uvXrange.reverse();
-        }
-
-        if (uvY2 === minY) {
-            uvYrange = uvYrange.reverse();
-        }
-
-        // TODO: This is more accurate, but still doesn't actually rotate
-        if (_.has(face, 'rotation')) {
-            if (face.rotation === 90 || face.rotation === 270) {
-                [uvXrange, uvYrange] = [uvYrange, uvXrange];
-            }
-        }
-
-        let drawY = 0;
-
-        _.each(uvYrange, function (y) {
-            let drawX = 0;
-
-            _.each(uvXrange, function (x) {
-                const pixel = sourceContext.getImageData(x, y, 1, 1);
-                const color = new Color(pixel.data);
-
-                context.fillStyle = color.rgba();
-                context.fillRect(drawX, drawY, 1, 1);
-
-                drawX += 1;
-            });
-
-            drawY += 1;
-        });
-
-        callback(imageCanvas);
-    });
-
-    painter.resolveTexture(faceTexture, function (src) {
-        $img.attr('src', src);
-    });
-};
-
-const getTextureMaterial = function (face, data, callback) {
-    resolveTextureUV(face, data, function (textureUV) {
-        const textureCanvas = new THREE.CanvasTexture(textureUV);
-
-        textureCanvas.magFilter = THREE.NearestFilter;
-        textureCanvas.minFilter = THREE.NearestFilter;
-
-        callback(new THREE.MeshBasicMaterial({
-            map: textureCanvas,
-            transparent: true,
-            alphaTest: 0.5,
-            // depthWrite: false,
-            // depthTest: false,
-        }));
-    });
-};
+    <ul class="model-layers rest"></ul>
+</div>`);
 
 const letters = require('./alphabet.js');
 
@@ -181,6 +63,7 @@ const addCube = function (parent, element, data) {
             r: {x: 0, y: π / +2, z: 0},
             w: max.z - min.z, h: max.y - min.y,
             f: element.faces.east,
+            u: Resolver.getFallbackUv(element, 'east'),
         });
     }
 
@@ -191,6 +74,7 @@ const addCube = function (parent, element, data) {
             r: {x: 0, y: π / -2, z: 0},
             w: max.z - min.z, h: max.y - min.y,
             f: element.faces.west,
+            u: Resolver.getFallbackUv(element, 'west'),
         });
     }
 
@@ -201,6 +85,7 @@ const addCube = function (parent, element, data) {
             r: {x: π / -2, y: 0, z: 0},
             w: max.x - min.x, h: max.z - min.z,
             f: element.faces.up,
+            u: Resolver.getFallbackUv(element, 'up'),
         });
     }
 
@@ -211,6 +96,7 @@ const addCube = function (parent, element, data) {
             r: {x: π / +2, y: 0, z: 0},
             w: max.x - min.x, h: max.z - min.z,
             f: element.faces.down,
+            u: Resolver.getFallbackUv(element, 'down'),
         });
     }
 
@@ -221,6 +107,7 @@ const addCube = function (parent, element, data) {
             r: {x: π, y: 0, z: π},
             w: max.x - min.x, h: max.y - min.y,
             f: element.faces.north,
+            u: Resolver.getFallbackUv(element, 'north'),
         });
     }
 
@@ -231,11 +118,12 @@ const addCube = function (parent, element, data) {
             r: {x: 0, y: 0, z: 0},
             w: max.x - min.x, h: max.y - min.y,
             f: element.faces.south,
+            u: Resolver.getFallbackUv(element, 'south'),
         });
     }
 
     planes.forEach(function (planeStruct) {
-        getTextureMaterial(planeStruct.f, data, function (material) {
+        Resolver.getTextureMaterial(planeStruct.f, data, planeStruct.u.min, planeStruct.u.max, function (material) {
             const geometry = new THREE.PlaneGeometry(planeStruct.w, planeStruct.h);
             const plane = new THREE.Mesh(geometry, material);
 
@@ -279,6 +167,8 @@ const addCube = function (parent, element, data) {
     }
 
     parent.add(pivot);
+
+    return pivot;
 };
 
 const addGrid = (parent) => {
@@ -309,8 +199,13 @@ let globalRotation = null;
 const Viewer = function () {
     const self = this;
 
+    const $wrapper = $(viewerTemplate({
+    }));
+
+    const layers = new Layers($wrapper.find('.model-layers'));
+
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, VIEWER_WIDTH / VIEWER_HEIGHT, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
 
     camera.position.x = camera.position.z = 20;
     camera.position.y = 16;
@@ -369,8 +264,22 @@ const Viewer = function () {
 
     pivot.add(center(preview));
 
-    renderer.setSize(VIEWER_WIDTH, VIEWER_HEIGHT);
-    renderer.setClearColor(0x000000, 0);
+    // https://stackoverflow.com/a/45046955
+    const updateCameraProperties = () => {
+        const canvas = renderer.domElement;
+
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+
+        if (canvas.width !== width || canvas.height !== height) {
+            renderer.setSize(width, height, false);
+            renderer.setClearColor(0x000000, 0);
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+    };
+
 
     let rendering = false;
 
@@ -381,7 +290,7 @@ const Viewer = function () {
             requestAnimationFrame(render);
         }
 
-        camera.updateProjectionMatrix();
+        updateCameraProperties();
         renderer.render(scene, camera);
     };
 
@@ -401,8 +310,12 @@ const Viewer = function () {
         }
 
         clearPreview();
+        layers.clear();
+
         data.elements.forEach(function (element) {
-            addCube(preview, element, data);
+            const object = addCube(preview, element, data);
+
+            layers.add(object, element, data);
         });
 
         addGrid(preview);
@@ -415,6 +328,8 @@ const Viewer = function () {
             pivot.rotation.x = globalRotation.x;
             pivot.rotation.y = globalRotation.y;
             pivot.rotation.z = globalRotation.z;
+
+            orientAxisCaptions();
         }
 
         rendering = true;
@@ -476,7 +391,8 @@ const Viewer = function () {
             $dom.off('mousemove', mouseMove);
         });
 
-        $parent.append($dom.addClass('viewer'));
+        $wrapper.find('.model-view').append($dom.addClass('viewer'));
+        $parent.append($wrapper);
 
         return self;
     };
