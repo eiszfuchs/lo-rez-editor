@@ -414,20 +414,7 @@ const Editor = function (paneManager, zip) {
         }
 
         palette = Palette.cleanup(palette);
-
-        palette.forEach((color, index) => {
-            const $color = $(`<li>
-                <b style="background-color: ${color.rgba()};"></b>
-            </li>`);
-
-            $color.on('click', function () {
-                $color.addClass('selected').siblings().removeClass('selected');
-
-                selectedColor = index;
-            });
-
-            $palette.append($color);
-        });
+        Palette.build($palette, palette);
 
         _.each(_.range(editorHeight), (y) => {
             const $row = $('<div class="row" />');
@@ -450,6 +437,10 @@ const Editor = function (paneManager, zip) {
         self.pixels(library.get(zip.entry.entryName));
 
         $editor.trigger('refresh');
+    });
+
+    $palette.on('set-color', (event, index) => {
+        selectedColor = index;
     });
 
     $editor.on('mouseenter', '.cell', function () {

@@ -76,7 +76,7 @@ app.on('ready', () => {
             useContentSize: true,
             autoHideMenuBar: true,
             webPreferences: {
-                devTools: false,
+                devTools: true,
                 webgl: true,
             },
         });
