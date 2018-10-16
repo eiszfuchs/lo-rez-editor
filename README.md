@@ -6,6 +6,8 @@
 
 ![Screenshot of the model editor](media/model-editor.png)
 
+![Screenshot of the dial editor](media/dial-editor.png)
+
 
 ## Usage
 
