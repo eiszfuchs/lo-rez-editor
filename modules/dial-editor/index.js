@@ -49,11 +49,12 @@ const applianceList = [{
     assetBase: 'assets/minecraft/textures/item/compass_',
 }];
 
-const getInterframePalette = async (zip, assetNameBase, frameCount) => {
+const getInterframePalette = async (zip, assetName, frameCount) => {
     const palette = [];
 
     for (let t = 0; t < frameCount; t += 1) {
-        const filename = `${assetNameBase}${t.toString(10).padStart(2, '0')}.png`;
+        const num = t.toString(10).padStart(2, '0');
+        const filename = `${assetName}${num}.png`;
         const src = makeBase64(zip.getEntry(filename).getData());
         const colors = await PixelPanel.getColors(src);
 
@@ -70,12 +71,18 @@ const drawInterframe = (dialCanvas, maskCanvas, overlayCanvas, progress) => {
     const context = canvas.getContext('2d');
 
     canvas.width = canvas.height = 8;
-
     context.imageSmoothingEnabled = false;
+
+    // Draw mask as background
+    context.drawImage(maskCanvas, 0, 0);
+
+    // Rotate context, then draw disk
     context.translate(4, 4);
     context.rotate((progress * 360) * Math.PI / 180);
     context.translate(-4, -4);
     context.drawImage(dialCanvas, 0, 0);
+
+    // Reset context transformation
     context.setTransform(1, 0, 0, 1, 0, 0);
 
     for (let y = 0; y < 8; y += 1) {
@@ -83,6 +90,7 @@ const drawInterframe = (dialCanvas, maskCanvas, overlayCanvas, progress) => {
             const pixelData = context.getImageData(x, y, 1, 1);
             const maskData = maskContext.getImageData(x, y, 1, 1);
 
+            // Clip disk to background alpha
             pixelData.data[3] = maskData.data[3];
 
             context.putImageData(pixelData, x, y);
@@ -116,23 +124,28 @@ const Editor = function (paneManager, zip) {
     let inFocus = false;
 
     let frameCount;
-    let assetNameBase;
+    let assetName;
 
     for (let i = 0; i < applianceList.length; i += 1) {
         const {name, frames, assetBase} = applianceList[i];
 
         if (zip.caption.indexOf(name) >= 0) {
             frameCount = frames;
-            assetNameBase = assetBase;
+            assetName = assetBase;
         }
     }
 
     const generateFrame = (frameIndex) => {
-        const dialCanvas = Painter.drawToCanvas(8, palette, dialEditor.pixels());
-        const maskCanvas = Painter.drawToCanvas(8, palette, maskEditor.pixels());
-        const overlayCanvas = Painter.drawToCanvas(8, palette, overlayEditor.pixels());
+        const dialPixels = dialEditor.pixels();
+        const maskPixels = maskEditor.pixels();
+        const overlayPixels = overlayEditor.pixels();
 
-        const dataUrl = drawInterframe(dialCanvas, maskCanvas, overlayCanvas, frameIndex / frameCount);
+        const dialCanvas = Painter.drawToCanvas(8, palette, dialPixels);
+        const maskCanvas = Painter.drawToCanvas(8, palette, maskPixels);
+        const overlayCanvas = Painter.drawToCanvas(8, palette, overlayPixels);
+
+        const dataUrl = drawInterframe(dialCanvas, maskCanvas, overlayCanvas,
+            frameIndex / frameCount);
 
         $pane.find('.preview').css({
             'background-image': `url(${dataUrl})`,
@@ -140,7 +153,7 @@ const Editor = function (paneManager, zip) {
     };
 
     const loadColors = async () => {
-        palette = await getInterframePalette(zip.zip, assetNameBase, frameCount);
+        palette = await getInterframePalette(zip.zip, assetName, frameCount);
 
         Palette.build($palette, palette);
 
@@ -154,9 +167,13 @@ const Editor = function (paneManager, zip) {
     self.save = function () {
         $save.addClass('is-loading');
 
-        library.set(`${assetNameBase}dial.png`, dialEditor.pixels(), () => {
-            library.set(`${assetNameBase}mask.png`, maskEditor.pixels(), () => {
-                library.set(`${assetNameBase}overlay.png`, overlayEditor.pixels(), () => {
+        const dialPixels = dialEditor.pixels();
+        const maskPixels = maskEditor.pixels();
+        const overlayPixels = overlayEditor.pixels();
+
+        library.set(`${assetName}dial.png`, dialPixels, () => {
+            library.set(`${assetName}mask.png`, maskPixels, () => {
+                library.set(`${assetName}overlay.png`, overlayPixels, () => {
                     $save.removeClass('is-loading');
 
                     $('#files').trigger('refresh');
@@ -166,9 +183,9 @@ const Editor = function (paneManager, zip) {
     };
 
     self.load = function () {
-        dialEditor.pixels(library.get(`${assetNameBase}dial.png`));
-        maskEditor.pixels(library.get(`${assetNameBase}mask.png`));
-        overlayEditor.pixels(library.get(`${assetNameBase}overlay.png`));
+        dialEditor.pixels(library.get(`${assetName}dial.png`));
+        maskEditor.pixels(library.get(`${assetName}mask.png`));
+        overlayEditor.pixels(library.get(`${assetName}overlay.png`));
     };
 
     self.getTab = () => zip.short;
@@ -251,24 +268,30 @@ Editor.getListEntry = (paneOrganizer, zip, entry) => {
 Editor.refreshListEntry = (properties, $entry) => {
     const entry = properties.entry;
 
-    const dialDefinition = library.get(entry.entryName.replace('_00', '_dial'));
-    const maskDefinition = library.get(entry.entryName.replace('_00', '_mask'));
-    const overlayDefinition = library.get(entry.entryName.replace('_00', '_overlay'));
+    const dialName = entry.entryName.replace('_00', '_dial');
+    const maskName = entry.entryName.replace('_00', '_mask');
+    const overlayName = entry.entryName.replace('_00', '_overlay');
 
-    const isDefined = (typeof dialDefinition !== 'undefined') && (typeof maskDefinition !== 'undefined') && (typeof overlayDefinition !== 'undefined');
+    const dialDefinition = library.get(dialName);
+    const maskDefinition = library.get(maskName);
+    const overlayDefinition = library.get(overlayName);
+
+    const isDefined =
+        (typeof dialDefinition !== 'undefined') &&
+        (typeof maskDefinition !== 'undefined') &&
+        (typeof overlayDefinition !== 'undefined');
 
     $entry.toggleClass('is-defined', isDefined);
 };
 
 const fs = require('fs');
-const extractor = require('../extractor');
 const ZipOrganizer = require('../organizer')('zip');
 
 Editor.export = async () => {
-    const currentZip = ZipOrganizer.get();
+    const zip = ZipOrganizer.get();
 
     for (let i = 0; i < applianceList.length; i += 1) {
-        const {name, frames, assetBase} = applianceList[i];
+        const {frames, assetBase} = applianceList[i];
 
         const dialDefinition = library.get(`${assetBase}dial.png`);
         const maskDefinition = library.get(`${assetBase}mask.png`);
@@ -286,19 +309,21 @@ Editor.export = async () => {
             continue;
         }
 
-        const palette = await getInterframePalette(currentZip, assetBase, frames);
+        const palette = await getInterframePalette(zip, assetBase, frames);
 
-        const dialCanvas = Painter.drawToCanvas(8, palette, dialDefinition);
-        const maskCanvas = Painter.drawToCanvas(8, palette, maskDefinition);
-        const overlayCanvas = Painter.drawToCanvas(8, palette, overlayDefinition);
+        const dial = Painter.drawToCanvas(8, palette, dialDefinition);
+        const mask = Painter.drawToCanvas(8, palette, maskDefinition);
+        const overlay = Painter.drawToCanvas(8, palette, overlayDefinition);
 
         for (let f = 0; f < frames; f += 1) {
-            const dataUrl = drawInterframe(dialCanvas, maskCanvas, overlayCanvas, f / frames);
+            const dataUrl = drawInterframe(dial, mask, overlay, f / frames);
 
             const data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
             const buffer = Buffer.from(data, 'base64');
 
-            fs.writeFile(`lo-rez/${assetBase}${f.toString().padStart(2, '0')}.png`, buffer, (error) => {
+            const num = f.toString().padStart(2, '0');
+
+            fs.writeFile(`lo-rez/${assetBase}${num}.png`, buffer, (error) => {
                 if (error) {
                     console.error(error);
                 }

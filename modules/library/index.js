@@ -76,6 +76,7 @@ module.exports = function (savePath, options = {}) {
         });
     }, 500);
 
+    // TODO: Could you please return a Promise
     self.set = function (name, value, callback) {
         storage[name] = value;
 
