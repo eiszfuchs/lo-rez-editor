@@ -1,3 +1,5 @@
+/* global $ */
+
 const _ = require('lodash');
 
 const isColorNeighbor = (color1, color2) => {
@@ -14,6 +16,24 @@ const thereAreNeighbors = (colors) =>
     ).length > 0;
 
 module.exports = {
+    build: ($palette, palette) => {
+        $palette.html('');
+
+        palette.forEach((color, index) => {
+            const $color = $(`<li>
+                <b style="background-color: ${color.rgba()};"></b>
+            </li>`);
+
+            $color.on('click', function () {
+                $color.addClass('selected').siblings().removeClass('selected');
+
+                $palette.trigger('set-color', index);
+            });
+
+            $palette.append($color);
+        });
+    },
+
     cleanup: (colors) => {
         let palette = _.uniqBy(colors, (d) => d.hex());
 

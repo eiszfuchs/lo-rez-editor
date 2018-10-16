@@ -33,6 +33,33 @@ const organize = require('../organizer');
 const ZipOrganizer = organize('zip');
 const TextureOrganizer = organize('texture');
 
+paint.drawToCanvas = (width, palette, pixels, scale = 1) => {
+    const height = pixels.length / width;
+
+    const canvas = document.createElement('canvas');
+
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+
+    const context = canvas.getContext('2d');
+
+    _.each(pixels, function (d, i) {
+        const x = i % width;
+        const y = Math.floor(i / width);
+
+        let colorValue = 'transparent';
+
+        if (d !== null) {
+            colorValue = palette[d].rgba();
+        }
+
+        context.fillStyle = colorValue;
+        context.fillRect(x * scale, y * scale, scale, scale);
+    });
+
+    return canvas;
+};
+
 paint.resolveTexture = function (textureName, callback) {
     const entryName = `assets/minecraft/textures/${textureName}.png`;
     const entry = ZipOrganizer.get().getEntry(entryName);

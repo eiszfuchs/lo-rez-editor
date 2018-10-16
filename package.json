@@ -1,18 +1,18 @@
 {
   "name": "lo-rez-editor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": true,
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "devDependencies": {
-    "electron": "3.0.3"
+    "electron": "3.0.4"
   },
   "dependencies": {
     "ace-builds": "1.4.1",
     "adm-zip": "0.4.11",
-    "bulma": "0.7.1",
+    "bulma": "0.7.2",
     "c-p": "1.4.0",
     "deep-extend": "0.6.0",
     "dot": "1.1.2",
