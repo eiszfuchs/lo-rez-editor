@@ -4,8 +4,6 @@ const _ = require('lodash');
 
 const Color = require('../color');
 
-const makeBase64 = (data) => `data:image/png;base64,${data.toString('base64')}`;
-
 const inArray = (array, value) => _.indexOf(array, value) >= 0;
 
 const PixelPanel = function ($editor, scale, size) {
@@ -16,10 +14,6 @@ const PixelPanel = function ($editor, scale, size) {
 
     let drawing = false;
     let overEditor = null;
-
-    const getPaletteIndex = function (color) {
-        return _.findIndex(palette, (d) => inArray(d.links(), color.hex()));
-    };
 
     const setEditorValue = function ($cell, color) {
         $cell.attr('data-color', color).trigger('refresh');
@@ -176,10 +170,14 @@ const PixelPanel = function ($editor, scale, size) {
         const y = parseInt($cell.attr('data-y'), 10);
 
         overEditor = {x, y};
+
+        $editor.trigger('over-pixel', {x, y});
     });
 
     $editor.on('mouseleave', function () {
         overEditor = null;
+
+        $editor.trigger('mouse-out');
     });
 
     $editor.on('mousedown', function () {

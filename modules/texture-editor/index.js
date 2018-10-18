@@ -10,6 +10,7 @@ require('../organizer')('texture').set(library);
 
 const Color = require('../color');
 const Palette = require('../palette');
+const PixelPanel = require('../pixel-panel');
 
 const Clipboard = require('../organizer')('texture/clipboard');
 
@@ -127,8 +128,6 @@ const editorTemplate = doT.template(`<div>
 
         <span class="spacer"></span>
 
-        <button class="js-repair button is-danger is-small">Repair</button>
-
         <button class="js-save button is-info is-small">Save</button>
     </div>
 </div>`);
@@ -148,56 +147,17 @@ const Editor = function (paneManager, zip) {
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
     const $save = $pane.find('.js-save');
-    const $repair = $pane.find('.js-repair');
     const $autopilot = $pane.find('.js-auto-pilot');
     const $tools = $pane.find('.js-texture-tools');
 
     let palette = [];
-    let selectedColor = null;
 
-    let drawing = false;
-    let overEditor = null;
+    let textureEditor;
 
     let editorWidth = 0;
     let editorHeight = 0;
 
     let context;
-
-    self.pixels = (pixels = []) => {
-        if (pixels.length > 0) {
-            let index = 0;
-
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
-                const color = pixels[index];
-
-                $cell.attr('data-legacy-color', color);
-
-                if (palette.hasOwnProperty(color)) {
-                    $cell.attr('data-color', color);
-                }
-
-                index += 1;
-            });
-
-            $editor.trigger('refresh');
-
-            return self;
-        }
-
-        $editor.find('.cell').each(function () {
-            const $cell = $(this);
-            const color = $cell.attr('data-color');
-
-            if (typeof color === 'undefined') {
-                pixels.push(null);
-            } else {
-                pixels.push(parseInt(color, 10));
-            }
-        });
-
-        return pixels;
-    };
 
     const getColorsAt = function (x, y, width, height) {
         const result = [];
@@ -224,13 +184,21 @@ const Editor = function (paneManager, zip) {
     };
 
     const highlightColors = function (picked) {
-        $palette.find('li').removeClass('picked').each(function () {
+        const $colors = $palette.find('li');
+
+        let index = 1;
+
+        $colors.removeClass('picked').removeAttr('data-hotkey');
+        $colors.each(function () {
             const $color = $(this);
             const colors = palette[$color.index()].links();
 
             colors.forEach((color) => {
                 if (inArray(picked, color)) {
                     $color.addClass('picked');
+                    $color.attr('data-hotkey', index);
+
+                    index += 1;
                 }
             });
         });
@@ -238,49 +206,6 @@ const Editor = function (paneManager, zip) {
 
     const getPaletteIndex = function (color) {
         return _.findIndex(palette, (d) => inArray(d.links(), color.hex()));
-    };
-
-    const setEditorValue = function ($cell, color) {
-        $cell.attr('data-color', color).trigger('refresh');
-    };
-
-    const getEditorValue = function ($cell) {
-        return $cell.attr('data-color');
-    };
-
-    const getEditorCell = function (x, y) {
-        return $editor.find(`[data-x="${x}"][data-y="${y}"]`);
-    };
-
-    const fillNode = function (x, y, color, visited = []) {
-        const $fillCell = getEditorCell(x, y);
-
-        if (inArray(visited, $fillCell[0])) {
-            return;
-        }
-
-        const oldValue = getEditorValue($fillCell);
-
-        setEditorValue($fillCell, color);
-        visited.push($fillCell[0]);
-
-        _.each([
-            [+1, 0],
-            [-1, 0],
-            [0, +1],
-            [0, -1],
-        ], function (d) {
-            const $cell = getEditorCell(x + d[0], y + d[1]);
-            const value = getEditorValue($cell);
-
-            if (value === oldValue) {
-                fillNode(x + d[0], y + d[1], color, visited);
-            }
-        });
-    };
-
-    const fillEditor = function () {
-        fillNode(overEditor.x, overEditor.y, selectedColor);
     };
 
     // inefficient code for better understanding
@@ -291,10 +216,6 @@ const Editor = function (paneManager, zip) {
 
         if (char >= matchKey('1') && char <= matchKey('4')) {
             $palette.find('.picked').eq(char - 49).click();
-        }
-
-        if (char === matchKey('f') && overEditor) {
-            fillEditor();
         }
     });
 
@@ -312,11 +233,7 @@ const Editor = function (paneManager, zip) {
     });
 
     $source.on('mouseleave', function () {
-        $palette.find('li').removeClass('picked');
-    });
-
-    $(document).on('mouseup', function () {
-        drawing = false;
+        $palette.find('li').removeClass('picked').removeAttr('data-hotkey');
     });
 
     $pane.attr('data-transparency', 'a');
@@ -324,6 +241,7 @@ const Editor = function (paneManager, zip) {
         $pane.attr('data-transparency', $(this).attr('data-transparency'));
     });
 
+    // TODO: Get preview texture from editor
     $editor.on('refresh', _.throttle(() => {
         if (palette.length < 1) {
             return false;
@@ -348,8 +266,6 @@ const Editor = function (paneManager, zip) {
                 }
             }
 
-            $cell.css('background-color', colorValue);
-
             const x = parseInt($cell.attr('data-x'), 10);
             const y = parseInt($cell.attr('data-y'), 10);
 
@@ -368,6 +284,8 @@ const Editor = function (paneManager, zip) {
         const sourceWidth = this.naturalWidth * viewScale;
         const sourceHeight = this.naturalHeight * viewScale;
 
+        const editorScale = viewScale * targetDivider;
+
         editorWidth = this.naturalWidth / targetDivider;
         editorHeight = this.naturalHeight / targetDivider;
 
@@ -376,10 +294,7 @@ const Editor = function (paneManager, zip) {
             height: `${sourceHeight}px`,
         });
 
-        $editor.css({
-            width: `${sourceWidth}px`,
-            height: `${sourceHeight}px`,
-        });
+        textureEditor = new PixelPanel($editor, editorScale, editorWidth);
 
         const canvas = document.createElement('canvas');
 
@@ -413,46 +328,26 @@ const Editor = function (paneManager, zip) {
             }
         }
 
-        palette = Palette.cleanup(palette);
-        Palette.build($palette, palette);
-
-        _.each(_.range(editorHeight), (y) => {
-            const $row = $('<div class="row" />');
-
-            _.each(_.range(editorWidth), (x) => {
-                const $cell = $('<div class="cell" />');
-
-                $cell.attr('data-x', x);
-                $cell.attr('data-y', y);
-
-                $row.append($cell);
-            });
-
-            $editor.append($row);
-        });
-
         $previews.filter('.source')
             .css('background-image', `url(${preview.toDataURL()})`);
 
-        self.pixels(library.get(zip.entry.entryName));
+        palette = Palette.cleanup(palette);
+        Palette.build($palette, palette);
+
+        textureEditor.setPalette(palette);
+        textureEditor.pixels(library.get(zip.entry.entryName));
 
         $editor.trigger('refresh');
     });
 
     $palette.on('set-color', (event, index) => {
-        selectedColor = index;
+        textureEditor.setSelected(index);
     });
 
-    $editor.on('mouseenter', '.cell', function () {
+    $editor.on('over-pixel', function (event, {x, y}) {
         if (!context) {
             return;
         }
-
-        const $cell = $(this);
-        const x = parseInt($cell.attr('data-x'), 10);
-        const y = parseInt($cell.attr('data-y'), 10);
-
-        overEditor = {x, y};
 
         const detected = _.map(getColorsAt(x * 2, y * 2, 2, 2),
             (d) => d.hex());
@@ -460,24 +355,8 @@ const Editor = function (paneManager, zip) {
         highlightColors(detected);
     });
 
-    $editor.on('mouseleave', function () {
-        $palette.find('li').removeClass('picked');
-
-        overEditor = null;
-    });
-
-    $editor.on('mousedown', function () {
-        drawing = true;
-    });
-
-    $editor.on('mousedown mousemove', '.cell', function (event) {
-        event.preventDefault();
-
-        if (!drawing && event.type === 'mousemove') {
-            return;
-        }
-
-        setEditorValue($(this), selectedColor);
+    $editor.on('mouse-out', function () {
+        $palette.find('li').removeClass('picked').removeAttr('data-hotkey');
     });
 
     const getAutoPilotPalette = function () {
@@ -498,6 +377,7 @@ const Editor = function (paneManager, zip) {
                 .removeClass('is-active');
         })
         .on('click', '[data-method="nearest"]', function () {
+            // TODO: Don't manipulate $editor directly
             $editor.find('.cell').each(function () {
                 const $cell = $(this);
 
@@ -508,6 +388,7 @@ const Editor = function (paneManager, zip) {
                 .trigger('refresh');
         })
         .on('click', '[data-method="farest"]', function () {
+            // TODO: Don't manipulate $editor directly
             $editor.find('.cell').each(function () {
                 const $cell = $(this);
 
@@ -518,6 +399,7 @@ const Editor = function (paneManager, zip) {
                 .trigger('refresh');
         })
         .on('click', '[data-method="top-left"]', function () {
+            // TODO: Don't manipulate $editor directly
             $editor.find('.cell').each(function () {
                 const $cell = $(this);
 
@@ -531,6 +413,7 @@ const Editor = function (paneManager, zip) {
                 .trigger('refresh');
         })
         .on('click', '[data-method="edges-outside"]', function () {
+            // TODO: Don't manipulate $editor directly
             $editor.find('.cell').each(function () {
                 const $cell = $(this);
 
@@ -552,6 +435,7 @@ const Editor = function (paneManager, zip) {
                 .trigger('refresh');
         })
         .on('click', '[data-method="edges-inside"]', function () {
+            // TODO: Don't manipulate $editor directly
             $editor.find('.cell').each(function () {
                 const $cell = $(this);
 
@@ -582,7 +466,7 @@ const Editor = function (paneManager, zip) {
         .on('click', '[data-tool="paste-color"]', () => {
             const pastedPixels = Clipboard.get().colors;
 
-            self.pixels(
+            textureEditor.pixels(
                 pastedPixels.map((c) =>
                     getPaletteIndex(
                         _.sortBy(_.clone(palette), (d) => d.distance(c))[0]
@@ -593,22 +477,22 @@ const Editor = function (paneManager, zip) {
         .on('click', '[data-tool="paste-indices"]', () => {
             const pastedPixels = Clipboard.get().pixels;
 
-            self.pixels(pastedPixels);
+            textureEditor.pixels(pastedPixels);
         })
         .on('click', '[data-tool="copy"]', () => {
             Clipboard.set({
                 width: editorWidth,
                 height: editorHeight,
 
-                pixels: self.pixels(),
-                colors: self.pixels().map((d) => palette[d]),
+                pixels: textureEditor.pixels(),
+                colors: textureEditor.pixels().map((d) => palette[d]),
             });
         });
 
     self.save = function () {
         $save.addClass('is-loading');
 
-        library.set(zip.entry.entryName, self.pixels(), () => {
+        library.set(zip.entry.entryName, textureEditor.pixels(), () => {
             $save.removeClass('is-loading');
 
             $('#files').trigger('refresh');
@@ -616,21 +500,6 @@ const Editor = function (paneManager, zip) {
     };
 
     $save.on('click', self.save);
-
-    self.repair = function () {
-        $editor.find('.cell[data-legacy-color]').each(function () {
-            const $cell = $(this);
-            const legacyIndex = parseInt($cell.attr('data-legacy-color'), 10);
-            const paletteCandidates = palette.filter((d) =>
-                inArray(d.ids(), legacyIndex));
-
-            $cell.attr('data-color', getPaletteIndex(paletteCandidates[0]));
-            $cell.removeAttr('data-legacy-color');
-        }).end()
-            .trigger('refresh');
-    };
-
-    $repair.on('click', self.repair);
 
     self.getTab = () => zip.short;
 
