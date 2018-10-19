@@ -6,10 +6,13 @@ const Color = require('../color');
 
 const inArray = (array, value) => _.indexOf(array, value) >= 0;
 
-const PixelPanel = function ($editor, scale, size) {
+const PixelPanel = function ($editor, scale, width, height) {
     const self = this;
 
+    const $scroll = $('<div class="scroll" />');
+
     let palette = [];
+    let activeFrame = 0;
     let selectedColor = null;
 
     let drawing = false;
@@ -33,6 +36,12 @@ const PixelPanel = function ($editor, scale, size) {
 
     self.setSelected = (newColor = null) => {
         selectedColor = newColor;
+    };
+
+    self.setFrame = (newFrame) => {
+        activeFrame = parseInt(newFrame, 10);
+
+        $editor.trigger('refresh');
     };
 
     self.pixels = (pixels = []) => {
@@ -90,10 +99,19 @@ const PixelPanel = function ($editor, scale, size) {
 
             $cell.css('background-color', colorValue);
         });
+
+        $scroll.css({
+            top: `${activeFrame * (-width * scale)}px`,
+        });
     }, 75);
 
-    self.build = (width, height) => {
+    self.build = () => {
         $editor.css({
+            width: `${width * scale}px`,
+            height: `${height * scale}px`,
+        });
+
+        $scroll.css({
             width: `${width * scale}px`,
             height: `${height * scale}px`,
         });
@@ -110,7 +128,15 @@ const PixelPanel = function ($editor, scale, size) {
                 $row.append($cell);
             });
 
-            $editor.append($row);
+            $scroll.append($row);
+        });
+
+        $editor.append($scroll);
+    };
+
+    self.setFrameHeight = (frameHeight = width) => {
+        $editor.css({
+            height: `${frameHeight * scale}px`,
         });
     };
 
@@ -145,7 +171,7 @@ const PixelPanel = function ($editor, scale, size) {
         fillNode(overEditor.x, overEditor.y, selectedColor);
     };
 
-    self.build(size, size);
+    self.build();
 
     $(document).on('mouseup', function () {
         drawing = false;

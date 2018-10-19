@@ -29,6 +29,7 @@ const updateTransparencyColor = () => {
 const viewScale = 12;
 const sourcePreviewScale = 2;
 const targetDivider = 2;
+const editorScale = viewScale * targetDivider;
 const editorPreviewScale = sourcePreviewScale * targetDivider;
 
 const inArray = (array, value) => _.indexOf(array, value) >= 0;
@@ -42,11 +43,19 @@ const entryTemplate = doT.template(`<li>
 
 const editorTemplate = doT.template(`<div>
     <div class="horizontal segments">
-        <img src="{{=it.source}}" class="source-view" />
+        <div class="source-scroll">
+            <img src="{{=it.source}}" class="source-view" />
+        </div>
         <div class="editor-view"></div>
     </div>
 
-    <ul class="palette"></ul>
+    <div class="horizontal segments">
+        <ul class="frames"></ul>
+    </div>
+
+    <div class="horizontal segments">
+        <ul class="palette"></ul>
+    </div>
 
     <div class="horizontal segments previews">
         <div class="preview source"></div>
@@ -144,12 +153,14 @@ const Editor = function (paneManager, zip) {
     const $source = $pane.find('.source-view');
     const $editor = $pane.find('.editor-view');
 
+    const $frames = $pane.find('.frames');
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
     const $save = $pane.find('.js-save');
     const $autopilot = $pane.find('.js-auto-pilot');
     const $tools = $pane.find('.js-texture-tools');
 
+    let scrubbing = false;
     let palette = [];
 
     let textureEditor;
@@ -284,8 +295,6 @@ const Editor = function (paneManager, zip) {
         const sourceWidth = this.naturalWidth * viewScale;
         const sourceHeight = this.naturalHeight * viewScale;
 
-        const editorScale = viewScale * targetDivider;
-
         editorWidth = this.naturalWidth / targetDivider;
         editorHeight = this.naturalHeight / targetDivider;
 
@@ -294,7 +303,30 @@ const Editor = function (paneManager, zip) {
             height: `${sourceHeight}px`,
         });
 
-        textureEditor = new PixelPanel($editor, editorScale, editorWidth);
+        textureEditor = new PixelPanel($editor, editorScale,
+            editorWidth, editorHeight);
+
+        // Is the texture's height a multiple of its width?
+        if ((editorHeight > editorWidth) && (editorHeight % editorWidth === 0)) {
+            textureEditor.setFrameHeight(editorWidth);
+
+            $source.parent().css({
+                width: `${sourceWidth}px`,
+                height: `${sourceWidth}px`,
+            });
+
+            const frameCount = editorHeight / editorWidth;
+
+            for (let f = 0; f < frameCount; f += 1) {
+                const $frame = $('<li class="frame" />').attr('data-frame', f);
+
+                if (f === 0) {
+                    $frame.addClass('active');
+                }
+
+                $frames.append($frame);
+            }
+        }
 
         const canvas = document.createElement('canvas');
 
@@ -338,6 +370,44 @@ const Editor = function (paneManager, zip) {
         textureEditor.pixels(library.get(zip.entry.entryName));
 
         $editor.trigger('refresh');
+    });
+
+    const activateFrame = ($frame) => {
+        if (!scrubbing) {
+            return;
+        }
+
+        const frameIndex = $frame.attr('data-frame');
+
+        textureEditor.setFrame(frameIndex);
+
+        $source.css({
+            top: `${frameIndex * (-editorWidth * editorScale)}px`,
+        });
+
+        $frame.addClass('active').siblings().removeClass('active');
+    };
+
+    $frames.on('mousedown', '.frame', function () {
+        const $frame = $(this);
+
+        scrubbing = true;
+
+        activateFrame($frame);
+
+        return false;
+    });
+
+    $frames.on('mouseenter', '.frame', function () {
+        const $frame = $(this);
+
+        activateFrame($frame);
+
+        return false;
+    });
+
+    $(document).on('mouseup', () => {
+        scrubbing = false;
     });
 
     $palette.on('set-color', (event, index) => {

@@ -10,7 +10,7 @@ const Painter = require('../painter');
 const Palette = require('../palette');
 const PixelPanel = require('../pixel-panel');
 
-const viewScale = 16;
+const scale = 16;
 
 const makeBase64 = (data) => `data:image/png;base64,${data.toString('base64')}`;
 
@@ -115,13 +115,11 @@ const Editor = function (paneManager, zip) {
     const $maskEditorWrapper = $pane.find('.editor-mask');
     const $overlayEditorWrapper = $pane.find('.editor-overlay');
 
-    const dialEditor = new PixelPanel($dialEditorWrapper, viewScale, 8);
-    const maskEditor = new PixelPanel($maskEditorWrapper, viewScale, 8);
-    const overlayEditor = new PixelPanel($overlayEditorWrapper, viewScale, 8);
+    const dialEditor = new PixelPanel($dialEditorWrapper, scale, 8, 8);
+    const maskEditor = new PixelPanel($maskEditorWrapper, scale, 8, 8);
+    const overlayEditor = new PixelPanel($overlayEditorWrapper, scale, 8, 8);
 
     let palette = [];
-
-    let inFocus = false;
 
     let frameCount;
     let assetName;
@@ -192,17 +190,9 @@ const Editor = function (paneManager, zip) {
 
     self.getPane = () => $pane;
 
-    self.activate = () => {
-        inFocus = true;
+    self.activate = () => self;
 
-        return self;
-    };
-
-    self.deactivate = () => {
-        inFocus = false;
-
-        return self;
-    };
+    self.deactivate = () => self;
 
     self.destroy = () => {
         $palette.off();
