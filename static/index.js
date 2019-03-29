@@ -140,10 +140,13 @@
         .on('refresh', _.debounce(refreshList, 100));
 
     const $filter = $('#filter');
+    const $ignoranceFilter = $('#ignorance-filter');
 
     const filterList = () => {
         const fullQuery = $filter.val().trim();
         const queries = fullQuery.split(/\s+/).map((d) => d.trim());
+
+        $list.toggleClass('hide-ignored', !$ignoranceFilter.prop('checked'));
 
         $list.find('li').each(function () {
             const $item = $(this);
@@ -163,6 +166,9 @@
 
     $filter
         .on('keyup', _.debounce(filterList, 100));
+
+    $ignoranceFilter
+        .on('change', _.debounce(filterList, 100));
 
     const $export = $('#export');
 

@@ -118,6 +118,7 @@ aside {
     }
 
     .panel-block {
+        flex-direction: column;
         flex-shrink: 0;
     }
 
@@ -129,6 +130,23 @@ aside {
 
         overflow-x: hidden;
         overflow-y: scroll;
+    }
+
+    .control {
+        + .control {
+            margin-top: 8px;
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+
+            font-size: 0.75rem;
+
+            input {
+                vertical-align: initial;
+            }
+        }
     }
 }
 
@@ -339,12 +357,19 @@ form {
             color: @orange;
         }
     }
+
+    &.hide-ignored {
+        .is-ignored {
+            display: none;
+        }
+    }
 }
 
 .frames {
     display: flex;
     flex-wrap: nowrap;
 
+    width: 100%;
     margin-right: 20px;
 
     li {
