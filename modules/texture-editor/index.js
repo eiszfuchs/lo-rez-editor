@@ -104,6 +104,10 @@ const editorTemplate = doT.template(`<div>
                     <a class="dropdown-item" data-method="edges-inside">
                         Edges inside
                     </a>
+
+                    <a class="dropdown-item" data-method="random">
+                        Random
+                    </a>
                 </div>
             </div>
         </div>
@@ -482,6 +486,18 @@ const Editor = function (paneManager, zip) {
                 .toggleClass('is-active')
                 .siblings()
                 .removeClass('is-active');
+        })
+        .on('click', '[data-method="random"]', function () {
+            // TODO: Don't manipulate $editor directly
+            $editor.find('.cell').each(function () {
+                const $cell = $(this);
+                const autoPalette = getAutoPilotPalette.apply($cell);
+
+                $cell.attr('data-color', getPaletteIndex(
+                    autoPalette[Math.floor(Math.random() * autoPalette.length)]
+                ));
+            }).end()
+                .trigger('refresh');
         })
         .on('click', '[data-method="nearest"]', function () {
             // TODO: Don't manipulate $editor directly
