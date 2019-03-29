@@ -1,5 +1,7 @@
 /* global $, CP */
 
+const fs = require('fs');
+
 const _ = require('lodash');
 const doT = require('dot');
 
@@ -141,6 +143,8 @@ const editorTemplate = doT.template(`<div>
 
         <span class="spacer"></span>
 
+        <button class="js-recover button is-danger is-small">Recover</button>
+
         <button class="js-save button is-info is-small">Save</button>
     </div>
 </div>`);
@@ -161,6 +165,7 @@ const Editor = function (paneManager, zip) {
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
     const $save = $pane.find('.js-save');
+    const $recover = $pane.find('.js-recover');
     const $autopilot = $pane.find('.js-auto-pilot');
     const $tools = $pane.find('.js-texture-tools');
 
@@ -296,6 +301,16 @@ const Editor = function (paneManager, zip) {
         $previews.filter('.editor')
             .css('background-image', `url(${preview.toDataURL()})`);
     }, 75));
+
+    const loadImageFromUrl = (url, callback) => {
+        const imageElement = document.createElement('img');
+
+        imageElement.addEventListener('load', function () {
+            callback(this);
+        });
+
+        imageElement.setAttribute('src', url);
+    };
 
     $source.on('load', function () {
         const sourceWidth = this.naturalWidth * viewScale;
@@ -622,7 +637,49 @@ const Editor = function (paneManager, zip) {
         });
     };
 
+    self.recover = function () {
+        $recover.addClass('is-loading');
+
+        fs.readFile(`lo-rez/${zip.entry.entryName}`, (error, recoveryData) => {
+            $recover.removeClass('is-loading');
+
+            if (error) {
+                return;
+            }
+
+            loadImageFromUrl(makeBase64(recoveryData), (result) => {
+                const canvas = document.createElement('canvas');
+
+                context = canvas.getContext('2d');
+
+                canvas.width = result.naturalWidth;
+                canvas.height = result.naturalHeight;
+
+                context.drawImage(result, 0, 0);
+
+                const preview = document.createElement('canvas');
+
+                preview.width = canvas.width * sourcePreviewScale;
+                preview.height = canvas.height * sourcePreviewScale;
+
+                for (let y = 0; y < canvas.height; y += 1) {
+                    for (let x = 0; x < canvas.width; x += 1) {
+                        const pixel = context.getImageData(x, y, 1, 1);
+                        const data = pixel.data;
+                        const color = new Color(data);
+
+                        textureEditor.setPixel(x, y, getPaletteIndex(
+                            _.sortBy(palette, (d) => d.distance(color))[0]
+                        ));
+                    }
+                }
+            });
+        });
+    };
+
     $save.on('click', self.save);
+
+    $recover.on('click', self.recover);
 
     self.getTab = () => zip.short;
 
@@ -661,6 +718,7 @@ const Editor = function (paneManager, zip) {
         $palette.find('li').off();
         $editor.off();
         $save.off();
+        $recover.off();
         $autopilot.off();
         $tools.off();
         $(document).off('keypress', documentKeyPress);
@@ -735,7 +793,6 @@ Editor.refreshListEntry = (properties, $entry) => {
     }
 };
 
-const fs = require('fs');
 const extractor = require('../extractor');
 const painter = require('../painter');
 const ZipOrganizer = require('../organizer')('zip');

@@ -80,6 +80,14 @@ const PixelPanel = function ($editor, scale, width, height) {
         return pixels;
     };
 
+    self.setPixel = (x, y, index) => {
+        getEditorCell(x, y).attr('data-color', index);
+
+        $editor.trigger('refresh');
+
+        return self;
+    };
+
     self.refresh = _.throttle(() => {
         if (palette.length < 1) {
             return false;
