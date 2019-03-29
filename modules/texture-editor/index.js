@@ -160,7 +160,9 @@ const Editor = function (paneManager, zip) {
     const $autopilot = $pane.find('.js-auto-pilot');
     const $tools = $pane.find('.js-texture-tools');
 
+    let playing = false;
     let scrubbing = false;
+    let frameCount = 0;
     let palette = [];
 
     let textureEditor;
@@ -315,7 +317,7 @@ const Editor = function (paneManager, zip) {
                 height: `${sourceWidth}px`,
             });
 
-            const frameCount = editorHeight / editorWidth;
+            frameCount = editorHeight / editorWidth;
 
             for (let f = 0; f < frameCount; f += 1) {
                 const $frame = $('<li class="frame" />').attr('data-frame', f);
@@ -326,6 +328,8 @@ const Editor = function (paneManager, zip) {
 
                 $frames.append($frame);
             }
+        } else {
+            $frames.parent().hide();
         }
 
         const canvas = document.createElement('canvas');
@@ -372,20 +376,39 @@ const Editor = function (paneManager, zip) {
         $editor.trigger('refresh');
     });
 
-    const activateFrame = ($frame) => {
-        if (!scrubbing) {
-            return;
-        }
-
-        const frameIndex = $frame.attr('data-frame');
-
+    const activateFrameIndex = (frameIndex) => {
         textureEditor.setFrame(frameIndex);
 
         $source.css({
             top: `${frameIndex * (-editorWidth * editorScale)}px`,
         });
 
+        const $frame = $frames.find('[data-frame]').eq(frameIndex);
+
         $frame.addClass('active').siblings().removeClass('active');
+    };
+
+    const activateFrame = ($frame) => {
+        if (!scrubbing) {
+            return;
+        }
+
+        const frameIndex = parseInt($frame.attr('data-frame'), 10);
+
+        activateFrameIndex(frameIndex);
+    };
+
+    const playFrame = () => {
+        let frameIndex = parseInt($frames.find('.active').attr('data-frame'), 10);
+
+        frameIndex = (frameIndex + 1) % frameCount;
+        activateFrameIndex(frameIndex);
+
+        window.setTimeout(() => {
+            if (playing) {
+                window.requestAnimationFrame(playFrame);
+            }
+        }, 1000 / 4);
     };
 
     $frames.on('mousedown', '.frame', function () {
@@ -406,9 +429,23 @@ const Editor = function (paneManager, zip) {
         return false;
     });
 
-    $(document).on('mouseup', () => {
+    const documentKeyPress = function (event) {
+        // Space
+        if (event.which === 32) {
+            playing = !playing;
+
+            if (playing) {
+                playFrame();
+            }
+        }
+    };
+
+    const documentMouseUp = () => {
         scrubbing = false;
-    });
+    };
+
+    $(document).on('keypress', documentKeyPress);
+    $(document).on('mouseup', documentMouseUp);
 
     $palette.on('set-color', (event, index) => {
         textureEditor.setSelected(index);
@@ -610,6 +647,8 @@ const Editor = function (paneManager, zip) {
         $save.off();
         $autopilot.off();
         $tools.off();
+        $(document).off('keypress', documentKeyPress);
+        $(document).off('mouseup', documentMouseUp);
     };
 
     return paneManager.add(self);
