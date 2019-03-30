@@ -45,10 +45,25 @@ const entryTemplate = doT.template(`<li>
 
 const editorTemplate = doT.template(`<div>
     <div class="horizontal segments">
-        <div class="source-scroll">
-            <img src="{{=it.source}}" class="source-view" />
+        <div class="source-view">
+            <div class="live-texture-scroll">
+                <img src="{{=it.source}}" class="live-texture" />
+            </div>
         </div>
-        <div class="editor-view"></div>
+
+        <div class="editor-view">
+            <div class="split-view">
+                <div class="start">
+                    <div class="live-texture-scroll">
+                        <img src="../{{=it.exported}}" class="live-texture" />
+                    </div>
+                </div>
+                <hr>
+                <div class="end">
+                    <div class="pixel-input"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="horizontal segments">
@@ -153,17 +168,21 @@ const Editor = function (paneManager, zip) {
     const self = this;
 
     const source = makeBase64(zip.entry.getData());
+    const exported = `lo-rez/${zip.entry.entryName}`;
 
     const $pane = $(editorTemplate({
         source,
+        exported,
     }));
 
-    const $source = $pane.find('.source-view');
-    const $editor = $pane.find('.editor-view');
+    const $source = $pane.find('.source-view .live-texture');
+    const $export = $pane.find('.editor-view .live-texture');
+    const $editor = $pane.find('.editor-view .pixel-input');
 
     const $frames = $pane.find('.frames');
     const $palette = $pane.find('.palette');
     const $previews = $pane.find('.preview');
+
     const $save = $pane.find('.js-save');
     const $recover = $pane.find('.js-recover');
     const $autopilot = $pane.find('.js-auto-pilot');
@@ -324,6 +343,11 @@ const Editor = function (paneManager, zip) {
             height: `${sourceHeight}px`,
         });
 
+        $export.css({
+            width: `${sourceWidth}px`,
+            height: `${sourceHeight}px`,
+        });
+
         textureEditor = new PixelPanel($editor, editorScale,
             editorWidth, editorHeight);
 
@@ -332,6 +356,11 @@ const Editor = function (paneManager, zip) {
             textureEditor.setFrameHeight(editorWidth);
 
             $source.parent().css({
+                width: `${sourceWidth}px`,
+                height: `${sourceWidth}px`,
+            });
+
+            $export.parent().css({
                 width: `${sourceWidth}px`,
                 height: `${sourceWidth}px`,
             });
@@ -402,6 +431,10 @@ const Editor = function (paneManager, zip) {
             top: `${frameIndex * (-editorWidth * editorScale)}px`,
         });
 
+        $export.css({
+            top: `${frameIndex * (-editorWidth * editorScale)}px`,
+        });
+
         const $frame = $frames.find('[data-frame]').eq(frameIndex);
 
         $frame.addClass('active').siblings().removeClass('active');
@@ -429,6 +462,46 @@ const Editor = function (paneManager, zip) {
             }
         }, 1000 / 4);
     };
+
+    $pane.find('.split-view hr').each(function () {
+        const $splitDrag = $(this);
+        const $splitView = $splitDrag.parent();
+        const $start = $splitView.find('.start');
+
+        const mouseMove = (event) => {
+            const bounds = $splitView[0].getBoundingClientRect();
+            let split = (event.clientX - bounds.left) / bounds.width;
+
+            split = Math.min(1, Math.max(0, split));
+            $splitDrag.css({
+                left: `${split * 100}%`,
+            });
+
+            $start.css({
+                width: `${split * 100}%`,
+            });
+
+            event.preventDefault();
+
+            return false;
+        };
+
+        const mouseUp = () => {
+            $(document).off('mousemove');
+            $(document).off('mouseup', mouseUp);
+
+            return false;
+        };
+
+        $splitDrag.on('mousedown', function () {
+            $(document).on('mousemove', mouseMove);
+            $(document).on('mouseup', mouseUp);
+
+            event.preventDefault();
+
+            return false;
+        });
+    });
 
     $frames.on('mousedown', '.frame', function () {
         const $frame = $(this);
@@ -640,7 +713,7 @@ const Editor = function (paneManager, zip) {
     self.recover = function () {
         $recover.addClass('is-loading');
 
-        fs.readFile(`lo-rez/${zip.entry.entryName}`, (error, recoveryData) => {
+        fs.readFile(exported, (error, recoveryData) => {
             $recover.removeClass('is-loading');
 
             if (error) {
