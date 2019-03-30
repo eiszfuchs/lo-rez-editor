@@ -142,9 +142,16 @@
     const $filter = $('#filter');
     const $ignoranceFilter = $('#ignorance-filter');
 
+    const includesQuery = (zip) =>
+        (query) => zip.entry.entryName.includes(query);
+
     const filterList = () => {
         const fullQuery = $filter.val().trim();
         const queries = fullQuery.split(/\s+/).map((d) => d.trim());
+
+        if (queries.indexOf('grey') >= 0) {
+            queries[queries.indexOf('grey')] = 'gray';
+        }
 
         $list.toggleClass('hide-ignored', !$ignoranceFilter.prop('checked'));
 
@@ -154,9 +161,7 @@
 
             let hidden = fullQuery !== '';
 
-            if (_.every(queries,
-                (query) => zip.entry.entryName.includes(query)
-            )) {
+            if (_.every(queries, includesQuery(zip))) {
                 hidden = false;
             }
 
