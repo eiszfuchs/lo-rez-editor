@@ -17,6 +17,9 @@ The idea is that you clone the [*lo-rez*](https://github.com/eiszfuchs/lo-rez) r
 ### Running
 
 ```bash
-npm install # or yarn
+npm install 
+# or yarn
+# or pnpm install
+
 npm start
 ```
