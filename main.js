@@ -14,6 +14,7 @@ const less = require('less');
 
 const staticFolder = 'static/';
 
+const debugMode = false;
 let mainWindow;
 
 const compile = (filename, callback) => {
@@ -79,12 +80,15 @@ app.on('ready', () => {
                 nodeIntegration: true,
                 webgl: true,
 
-                devTools: true,
+                devTools: debugMode,
             },
         });
 
         mainWindow.loadFile('views/index.html');
-        // mainWindow.webContents.openDevTools();
+
+        if (debugMode) {
+            mainWindow.webContents.openDevTools();
+        }
 
         mainWindow.on('closed', () => {
             mainWindow = null;
