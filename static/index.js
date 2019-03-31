@@ -32,6 +32,9 @@
 
     let listCache = {};
 
+    const $filter = $('#filter');
+    const $ignoranceFilter = $('#ignorance-filter');
+
     $list.data('ignorance', ignorance);
 
     const refreshList = () => {
@@ -63,6 +66,33 @@
             .end()
             .find('.content strong')
             .text(`${percentFinished.toFixed(1)}%`);
+    };
+
+    const includesQuery = (zip) =>
+        (query) => zip.entry.entryName.includes(query);
+
+    const filterList = () => {
+        const fullQuery = $filter.val().trim();
+        const queries = fullQuery.split(/\s+/).map((d) => d.trim());
+
+        if (queries.indexOf('grey') >= 0) {
+            queries[queries.indexOf('grey')] = 'gray';
+        }
+
+        $list.toggleClass('hide-ignored', !$ignoranceFilter.prop('checked'));
+
+        $list.find('li').each(function () {
+            const $item = $(this);
+            const zip = $item.prop('zip');
+
+            let hidden = fullQuery !== '';
+
+            if (_.every(queries, includesQuery(zip))) {
+                hidden = false;
+            }
+
+            $item.toggleClass('hidden', hidden);
+        });
     };
 
     glob('versions/*.jar', function (error, files) {
@@ -130,6 +160,7 @@
             });
 
             refreshList();
+            filterList();
         });
 
         if (files.length === 1) {
@@ -147,36 +178,6 @@
 
     $list
         .on('refresh', _.debounce(refreshList, 100));
-
-    const $filter = $('#filter');
-    const $ignoranceFilter = $('#ignorance-filter');
-
-    const includesQuery = (zip) =>
-        (query) => zip.entry.entryName.includes(query);
-
-    const filterList = () => {
-        const fullQuery = $filter.val().trim();
-        const queries = fullQuery.split(/\s+/).map((d) => d.trim());
-
-        if (queries.indexOf('grey') >= 0) {
-            queries[queries.indexOf('grey')] = 'gray';
-        }
-
-        $list.toggleClass('hide-ignored', !$ignoranceFilter.prop('checked'));
-
-        $list.find('li').each(function () {
-            const $item = $(this);
-            const zip = $item.prop('zip');
-
-            let hidden = fullQuery !== '';
-
-            if (_.every(queries, includesQuery(zip))) {
-                hidden = false;
-            }
-
-            $item.toggleClass('hidden', hidden);
-        });
-    };
 
     $filter
         .on('keyup', _.debounce(filterList, 100));
