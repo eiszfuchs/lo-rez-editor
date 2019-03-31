@@ -6,6 +6,8 @@ const _ = require('lodash');
 const doT = require('dot');
 const extendDeep = require('deep-extend');
 
+const prettier = require('prettier');
+
 const Library = require('../library');
 const library = new Library('lo-rez/models.jsonl');
 
@@ -31,6 +33,8 @@ const aceRowTemplate = doT.template(`<div class="model-editor">
         <button class="js-ignore button is-info is-small">Ignore</button>
 
         <button class="js-restore button is-danger is-small">Restore</button>
+
+        <button class="js-auto-uv button is-info is-small">Auto UV</button>
 
         <button class="js-save button is-info is-small">Save</button>
     </div>
@@ -141,6 +145,45 @@ const Editor = function (paneManager, zip) {
         });
 
         $jsonEditor.prop('editor', editor);
+
+        const $autoUvButton = $jsonEditor.find('.js-auto-uv');
+
+        $autoUvButton.on('click', () => {
+            const content = JSON.parse(editor.getValue());
+
+            _.each(content.elements, (element) => {
+                if (!_.has(element, 'faces')) {
+                    return;
+                }
+
+                const [[fromX, toX], [fromY, toY], [fromZ, toZ]] = [
+                    [Math.min(element.from[0], element.to[0]), Math.max(element.from[0], element.to[0])],
+                    [Math.min(element.from[1], element.to[1]), Math.max(element.from[1], element.to[1])],
+                    [Math.min(element.from[2], element.to[2]), Math.max(element.from[2], element.to[2])],
+                ];
+
+                if (_.entries(element.faces).length === 0) {
+                    element.faces = {
+                        up:    {texture: '#texture', uv: [16 - fromX, toZ, 16 - toX, fromZ]},
+                        down:  {texture: '#texture', uv: [fromX, 16 - toZ, toX, 16 - fromZ]},
+
+                        south: {texture: '#texture', uv: [fromX, 16 - toY, toX, 16 - fromY]},
+                        north: {texture: '#texture', uv: [16 - fromX, 16 - toY, 16 - toX, 16 - fromY]},
+
+                        east:  {texture: '#texture', uv: [16 - fromZ, 16 - toY, 16 - toZ, 16 - fromY]},
+                        west:  {texture: '#texture', uv: [fromZ, 16 - toY, toZ, 16 - fromY]},
+                    };
+                }
+            });
+
+            editor.setValue(prettier.format(JSON.stringify(content), {
+                parser: 'json',
+                tabWidth: 4,
+                printWidth: 79,
+                bracketSpacing: true,
+                endOfLine: 'lf',
+            }));
+        });
 
         const $saveButton = $jsonEditor.find('.js-save');
 

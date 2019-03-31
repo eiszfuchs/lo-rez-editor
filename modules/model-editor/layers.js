@@ -11,12 +11,12 @@ const layerTemplate = doT.template(`<li class="layer">
         <span class="from">{{=it.from}}</span>
         <span class="to">{{=it.to}}</span>
     </span>
-    <span class="hidden face" data-dir="N"><img class="tex"><img class="uv"></span>
-    <span class="hidden face" data-dir="S"><img class="tex"><img class="uv"></span>
-    <span class="hidden face" data-dir="E"><img class="tex"><img class="uv"></span>
-    <span class="hidden face" data-dir="W"><img class="tex"><img class="uv"></span>
-    <span class="hidden face" data-dir="U"><img class="tex"><img class="uv"></span>
-    <span class="hidden face" data-dir="D"><img class="tex"><img class="uv"></span>
+    <span title="south (Z+)" class="hidden face" data-dir="S"><img class="tex"><img class="uv"></span>
+    <span title="north (Z-)" class="hidden face" data-dir="N"><img class="tex"><img class="uv"></span>
+    <span title="east (X+)"  class="hidden face" data-dir="E"><img class="tex"><img class="uv"></span>
+    <span title="west (X-)"  class="hidden face" data-dir="W"><img class="tex"><img class="uv"></span>
+    <span title="up (Y+)"    class="hidden face" data-dir="U"><img class="tex"><img class="uv"></span>
+    <span title="down (Y-)"  class="hidden face" data-dir="D"><img class="tex"><img class="uv"></span>
 </li>`);
 
 const Layers = function ($wrapper) {
