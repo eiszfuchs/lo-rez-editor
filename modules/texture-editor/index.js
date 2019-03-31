@@ -721,25 +721,18 @@ const Editor = function (paneManager, zip) {
             }
 
             loadImageFromUrl(makeBase64(recoveryData), (result) => {
-                const canvas = document.createElement('canvas');
+                const recoveryCanvas = document.createElement('canvas');
+                const recoverContext = recoveryCanvas.getContext('2d');
 
-                context = canvas.getContext('2d');
+                recoveryCanvas.width = result.naturalWidth;
+                recoveryCanvas.height = result.naturalHeight;
 
-                canvas.width = result.naturalWidth;
-                canvas.height = result.naturalHeight;
+                recoverContext.drawImage(result, 0, 0);
 
-                context.drawImage(result, 0, 0);
-
-                const preview = document.createElement('canvas');
-
-                preview.width = canvas.width * sourcePreviewScale;
-                preview.height = canvas.height * sourcePreviewScale;
-
-                for (let y = 0; y < canvas.height; y += 1) {
-                    for (let x = 0; x < canvas.width; x += 1) {
-                        const pixel = context.getImageData(x, y, 1, 1);
-                        const data = pixel.data;
-                        const color = new Color(data);
+                for (let y = 0; y < recoveryCanvas.height; y += 1) {
+                    for (let x = 0; x < recoveryCanvas.width; x += 1) {
+                        const pixel = recoverContext.getImageData(x, y, 1, 1);
+                        const color = new Color(pixel.data);
 
                         textureEditor.setPixel(x, y, getPaletteIndex(
                             _.sortBy(palette, (d) => d.distance(color))[0]

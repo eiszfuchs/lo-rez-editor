@@ -52,8 +52,6 @@ const PixelPanel = function ($editor, scale, width, height) {
                 const $cell = $(this);
                 const color = pixels[index];
 
-                $cell.attr('data-legacy-color', color);
-
                 if (palette.hasOwnProperty(color)) {
                     $cell.attr('data-color', color);
                 }
@@ -83,7 +81,7 @@ const PixelPanel = function ($editor, scale, width, height) {
     self.setPixel = (x, y, index) => {
         getEditorCell(x, y).attr('data-color', index);
 
-        $editor.trigger('refresh');
+        self.refresh();
 
         return self;
     };
