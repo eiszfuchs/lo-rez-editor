@@ -3,6 +3,7 @@ const _ = require('lodash');
 const paint = function (result, texture, scale = 1) {
     const width = result.width / 2;
     const height = result.height / 2;
+    const palette = result.palette;
 
     const canvas = document.createElement('canvas');
 
@@ -15,13 +16,15 @@ const paint = function (result, texture, scale = 1) {
         const x = i % width;
         const y = Math.floor(i / width);
 
-        let colorValue = 'transparent';
-
-        if (d !== null) {
-            colorValue = result.palette[d].rgba();
+        if (d === null) {
+            throw new Error('Will not paint null pixels');
         }
 
-        context.fillStyle = colorValue;
+        if (d >= palette.length) {
+            throw new Error('Pixel out of palette bounds');
+        }
+
+        context.fillStyle = palette[d].rgba();
         context.fillRect(x * scale, y * scale, scale, scale);
     });
 

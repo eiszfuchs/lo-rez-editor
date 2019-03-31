@@ -30,6 +30,8 @@
     const $versionSelect = $('#versions');
     const $list = $('#files');
 
+    let listCache = {};
+
     $list.data('ignorance', ignorance);
 
     const refreshList = () => {
@@ -101,6 +103,8 @@
 
             window.GlobalValues.packFormat = packFormat;
 
+            listCache = {};
+
             zip.getEntries().sort((a, b) => {
                 if (a.entryName > b.entryName) {
                     return 1;
@@ -115,8 +119,13 @@
                         return;
                     }
 
-                    $list.append(Pane.getListEntry(PaneOrganizer, zip, entry)
-                        .addClass('list-entry'));
+                    const $entry = Pane
+                        .getListEntry(PaneOrganizer, zip, entry)
+                        .addClass('list-entry');
+
+                    $list.append($entry);
+
+                    listCache[entry.entryName] = $entry;
                 });
             });
 
@@ -195,4 +204,6 @@
 
         return false;
     });
+
+    window.getListEntry = (name) => listCache[name];
 }

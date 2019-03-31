@@ -1,4 +1,4 @@
-/* global $, CP */
+/* global $, CP, getListEntry */
 
 const fs = require('fs');
 
@@ -878,19 +878,25 @@ Editor.export = () => {
             return;
         }
 
-        const src = makeBase64(entry.getData());
+        extractor(makeBase64(entry.getData()), (result) => {
+            const $listEntry = getListEntry(i);
 
-        extractor(src, (result) => {
-            const data = painter(result, d)
-                .replace(/^data:image\/\w+;base64,/, '');
+            try {
+                $listEntry.removeClass('has-export-error');
 
-            const buffer = Buffer.from(data, 'base64');
+                const data = painter(result, d)
+                    .replace(/^data:image\/\w+;base64,/, '');
 
-            fs.writeFile(assetFilename, buffer, (error) => {
-                if (error) {
-                    console.error(error);
-                }
-            });
+                const buffer = Buffer.from(data, 'base64');
+
+                fs.writeFile(assetFilename, buffer, (error) => {
+                    if (error) {
+                        console.error(error);
+                    }
+                });
+            } catch (error) {
+                $listEntry.addClass('has-export-error');
+            }
         });
     });
 };
