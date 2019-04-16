@@ -2,18 +2,54 @@
 
 const _ = require('lodash');
 
-const isColorNeighbor = (color1, color2) => {
-    const diff = color1.difference(color2);
+const isColorNeighbor = (color, compare, tolerance = 3) => {
+    const diff = color.difference(compare);
 
-    return diff > 0 && diff <= 3;
+    return diff > 0 && diff <= tolerance;
 };
 
-const thereAreNeighbors = (colors) =>
+const thereAreNeighbors = (colors, tolerance = 3) =>
     colors.filter((color) =>
-        colors.filter((compareColor) =>
-            isColorNeighbor(color, compareColor)
+        colors.filter((compare) =>
+            isColorNeighbor(color, compare, tolerance)
         ).length > 0
     ).length > 0;
+
+const getTolerance = (palette) => {
+    // Don't need to compress so few colors
+    if (palette.length <= 15) {
+        // TODO: Is this really a good idea?
+        // return 0;
+    }
+
+    let maxDifference = 0;
+
+    palette.forEach((color) => {
+        palette.forEach((compare) => {
+            maxDifference = Math.max(maxDifference,
+                color.difference(compare));
+        });
+    });
+
+    // Not much variety to compress
+    if (maxDifference <= 15) {
+        return 0;
+    }
+
+    if (palette.length > 768) {
+        return 12;
+    }
+
+    if (palette.length > 512) {
+        return 6;
+    }
+
+    if (palette.length > 256) {
+        return 4;
+    }
+
+    return 3;
+};
 
 module.exports = {
     build: ($palette, palette) => {
@@ -36,36 +72,23 @@ module.exports = {
 
     cleanup: (colors) => {
         let palette = _.uniqBy(colors, (d) => d.hex());
+        const tolerance = getTolerance(palette);
 
         for (let c = 0; c < palette.length; c += 1) {
             palette[c].id(c);
         }
 
-        let maxDifference = 0;
-
-        palette.forEach((color) => {
-            palette.forEach((compareColor) => {
-                maxDifference = Math.max(maxDifference,
-                    color.difference(compareColor));
-            });
-        });
-
-        // Not much variety to compress
-        if (maxDifference <= 15) {
-            return palette;
-        }
-
-        while (thereAreNeighbors(palette)) {
+        while (thereAreNeighbors(palette, tolerance)) {
             const neighborSets = palette.map(
                 (color) => [color, palette.filter(
-                    (compareColor) => isColorNeighbor(color, compareColor)
+                    (compare) => isColorNeighbor(color, compare, tolerance)
                 )]
-            ).filter(([color, neighbors]) => neighbors.length > 0);
+            ).filter(([, neighbors]) => neighbors.length > 0);
 
             let maxNeighbors = 0;
 
             neighborSets.forEach(
-                ([color, neighbors]) => {
+                ([, neighbors]) => {
                     maxNeighbors = Math.max(maxNeighbors, neighbors.length);
                 }
             );
