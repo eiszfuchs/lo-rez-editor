@@ -21,9 +21,9 @@ const entryTemplate = doT.template(`<li>
 
 const editorTemplate = doT.template(`<div>
     <div class="horizontal segments">
-        <div class="editor-view editor-dial"></div>
-        <div class="editor-view editor-mask"></div>
-        <div class="editor-view editor-overlay"></div>
+        <div class="pixel-input editor-dial"></div>
+        <div class="pixel-input editor-mask"></div>
+        <div class="pixel-input editor-overlay"></div>
     </div>
 
     <ul class="palette"></ul>
