@@ -558,10 +558,7 @@ const Editor = function (paneManager, zip) {
         $palette.find('li').removeClass('picked').removeAttr('data-hotkey');
     });
 
-    const getAutoPilotPalette = function () {
-        const x = parseInt(this.attr('data-x'), 10);
-        const y = parseInt(this.attr('data-y'), 10);
-
+    const getAutoPilotPaletteAt = function (x, y) {
         const colors = getColorsAt(x * 2, y * 2, 2, 2);
         const average = Color.mix(colors);
 
@@ -576,95 +573,90 @@ const Editor = function (paneManager, zip) {
                 .removeClass('is-active');
         })
         .on('click', '[data-method="random"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
-                const autoPalette = getAutoPilotPalette.apply($cell);
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    const autoPalette = getAutoPilotPaletteAt(x, y);
 
-                $cell.attr('data-color', getPaletteIndex(
-                    autoPalette[Math.floor(Math.random() * autoPalette.length)]
-                ));
-            }).end()
-                .trigger('refresh');
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        _.sample(autoPalette)
+                    ));
+                }
+            }
         })
         .on('click', '[data-method="nearest"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    const autoPalette = getAutoPilotPaletteAt(x, y);
 
-                $cell.attr('data-color', getPaletteIndex(
-                    getAutoPilotPalette.apply($cell)[0]
-                ));
-            }).end()
-                .trigger('refresh');
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        _.head(autoPalette)
+                    ));
+                }
+            }
         })
         .on('click', '[data-method="farest"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    const autoPalette = getAutoPilotPaletteAt(x, y);
 
-                $cell.attr('data-color', getPaletteIndex(
-                    getAutoPilotPalette.apply($cell).reverse()[0]
-                ));
-            }).end()
-                .trigger('refresh');
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        _.last(autoPalette)
+                    ));
+                }
+            }
         })
         .on('click', '[data-method="top-left"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
-
-                const x = parseInt($cell.attr('data-x'), 10);
-                const y = parseInt($cell.attr('data-y'), 10);
-
-                $cell.attr('data-color', getPaletteIndex(
-                    getColorsAt(x, y, 1, 1)[0]
-                ));
-            }).end()
-                .trigger('refresh');
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        getColorsAt(x, y, 1, 1)[0]
+                    ));
+                }
+            }
         })
         .on('click', '[data-method="edges-outside"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
+            const canvasWidth = context.canvas.width;
 
-                let x = parseInt($cell.attr('data-x'), 10) * 2;
-                let y = parseInt($cell.attr('data-y'), 10) * 2;
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    let cx = x * 2;
+                    let cy = y * 2;
 
-                if (x >= context.canvas.width / 2) {
-                    x += 1;
+                    if ((cx) >= canvasWidth / 2) {
+                        cx += 1;
+                    }
+
+                    if ((cy % canvasWidth) >= canvasWidth / 2) {
+                        cy += 1;
+                    }
+
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        getColorsAt(cx, cy, 1, 1)[0]
+                    ));
                 }
-
-                if (y >= context.canvas.height / 2) {
-                    y += 1;
-                }
-
-                $cell.attr('data-color', getPaletteIndex(
-                    getColorsAt(x, y, 1, 1)[0]
-                ));
-            }).end()
-                .trigger('refresh');
+            }
         })
         .on('click', '[data-method="edges-inside"]', function () {
-            // TODO: Don't manipulate $editor directly
-            $editor.find('.cell').each(function () {
-                const $cell = $(this);
+            const canvasWidth = context.canvas.width;
 
-                let x = 1 + parseInt($cell.attr('data-x'), 10) * 2;
-                let y = 1 + parseInt($cell.attr('data-y'), 10) * 2;
+            for (let y = 0; y < editorHeight; y += 1) {
+                for (let x = 0; x < editorWidth; x += 1) {
+                    let cx = x * 2 + 1;
+                    let cy = y * 2 + 1;
 
-                if (x >= context.canvas.width / 2) {
-                    x -= 1;
+                    if ((cx) >= canvasWidth / 2) {
+                        cx -= 1;
+                    }
+
+                    if ((cy % canvasWidth) >= canvasWidth / 2) {
+                        cy -= 1;
+                    }
+
+                    textureEditor.setPixel(x, y, getPaletteIndex(
+                        getColorsAt(cx, cy, 1, 1)[0]
+                    ));
                 }
-
-                if (y >= context.canvas.height / 2) {
-                    y -= 1;
-                }
-
-                $cell.attr('data-color',
-                    getPaletteIndex(getColorsAt(x, y, 1, 1)[0]));
-            }).end()
-                .trigger('refresh');
+            }
         });
 
     $tools
