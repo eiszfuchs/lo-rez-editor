@@ -31,17 +31,35 @@
     const $list = $('#files');
 
     let listCache = {};
+    let listChecks = [];
 
     const $filter = $('#filter');
     const $ignoranceFilter = $('#ignorance-filter');
 
     $list.data('ignorance', ignorance);
 
+    const checkListEntry = () => {
+        if (listChecks.length > 0) {
+            const $entry = listChecks.pop();
+            const properties = $entry.prop('zip');
+
+            if (properties.editor.hasOwnProperty('verifyListEntry')) {
+                properties.editor.verifyListEntry(properties, $entry);
+            }
+        }
+
+        requestAnimationFrame(checkListEntry);
+    };
+
+    checkListEntry();
+
     const refreshList = () => {
         const $entries = $list.find('.list-entry');
         const totalEntries = $entries.length;
 
         let definedEntries = 0;
+
+        listChecks = [];
 
         $entries.each(function () {
             const $entry = $(this);
@@ -56,6 +74,8 @@
             if ($entry.is('.is-defined, .is-ignored')) {
                 definedEntries += 1;
             }
+
+            listChecks.push($entry);
         });
 
         const percentFinished = (definedEntries / totalEntries) * 100;

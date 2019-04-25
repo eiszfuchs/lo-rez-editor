@@ -855,6 +855,36 @@ const extractor = require('../extractor');
 const painter = require('../painter');
 const ZipOrganizer = require('../organizer')('zip');
 
+Editor.verifyListEntry = (properties, $listEntry) => {
+    $listEntry.removeClass('verified verified-error');
+
+    let error = false;
+
+    extractor(makeBase64(properties.entry.getData()), (result) => {
+        const definition = library.get(properties.entry.entryName);
+
+        if (!definition) {
+            error = true;
+
+            return;
+        }
+
+        if (definition.some((d) => d === null)) {
+            error = true;
+        }
+
+        if (Math.max(...definition) >= result.palette.length) {
+            error = true;
+        }
+
+        if (!error) {
+            $listEntry.addClass('verified');
+        } else {
+            $listEntry.addClass('verified-error');
+        }
+    });
+};
+
 Editor.export = () => {
     const currentZip = ZipOrganizer.get();
 
