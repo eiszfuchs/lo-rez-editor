@@ -19,7 +19,9 @@ const PixelPanel = function ($editor, scale, width, height) {
     let overEditor = null;
 
     const setEditorValue = function ($cell, color) {
-        $cell.attr('data-color', color).trigger('refresh');
+        $cell.attr('data-color', color);
+
+        self.refresh();
     };
 
     const getEditorValue = function ($cell) {
@@ -41,7 +43,7 @@ const PixelPanel = function ($editor, scale, width, height) {
     self.setFrame = (newFrame) => {
         activeFrame = parseInt(newFrame, 10);
 
-        $editor.trigger('refresh');
+        self.refresh();
     };
 
     self.pixels = (pixels = []) => {
@@ -59,7 +61,7 @@ const PixelPanel = function ($editor, scale, width, height) {
                 index += 1;
             });
 
-            $editor.trigger('refresh');
+            self.refresh();
 
             return self;
         }
@@ -109,6 +111,8 @@ const PixelPanel = function ($editor, scale, width, height) {
         $scroll.css({
             top: `${activeFrame * (-width * scale)}px`,
         });
+
+        $editor.trigger('refresh');
     }, 75);
 
     self.build = () => {
@@ -193,8 +197,6 @@ const PixelPanel = function ($editor, scale, width, height) {
             fillEditor();
         }
     });
-
-    $editor.on('refresh', self.refresh);
 
     $editor.on('mouseenter', '.cell', function () {
         const $cell = $(this);
