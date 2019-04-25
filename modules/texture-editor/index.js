@@ -463,23 +463,34 @@ const Editor = function (paneManager, zip) {
         }, 1000 / 4);
     };
 
-    $pane.find('.split-view hr').each(function () {
-        const $splitDrag = $(this);
+    let lastSplit = 0;
+
+    const setViewSplit = ($splitDrag, split) => {
         const $splitView = $splitDrag.parent();
         const $start = $splitView.find('.start');
 
+        const finalSplit = Math.min(1, Math.max(0, split));
+
+        $splitDrag.css({
+            left: `${finalSplit * 100}%`,
+        });
+
+        $start.css({
+            width: `${finalSplit * 100}%`,
+        });
+
+        lastSplit = Math.round(finalSplit);
+    };
+
+    $pane.find('.split-view hr').each(function () {
+        const $splitDrag = $(this);
+        const $splitView = $splitDrag.parent();
+
         const mouseMove = (event) => {
             const bounds = $splitView[0].getBoundingClientRect();
-            let split = (event.clientX - bounds.left) / bounds.width;
+            const split = (event.clientX - bounds.left) / bounds.width;
 
-            split = Math.min(1, Math.max(0, split));
-            $splitDrag.css({
-                left: `${split * 100}%`,
-            });
-
-            $start.css({
-                width: `${split * 100}%`,
-            });
+            setViewSplit($splitDrag, split);
 
             event.preventDefault();
 
@@ -522,6 +533,13 @@ const Editor = function (paneManager, zip) {
     });
 
     const documentKeyPress = function (event) {
+        // Minus
+        if (event.which === 45) {
+            setViewSplit($('.split-view hr'), lastSplit === 0 ? 1 : 0);
+
+            return false;
+        }
+
         // Space
         if (event.which === 32) {
             playing = !playing;
@@ -529,6 +547,8 @@ const Editor = function (paneManager, zip) {
             if (playing) {
                 playFrame();
             }
+
+            return false;
         }
     };
 
