@@ -9,6 +9,7 @@
     const PaneOrganizer = require('../modules/window-manager');
 
     const Library = require('../modules/library');
+    const versions = new Library('lo-rez/versions.jsonl');
     const ignorance = new Library('lo-rez/ignorance.jsonl', {
         cleanup: (value) => value,
     });
@@ -27,8 +28,10 @@
         });
     });
 
+    let currentVersion = null;
     const $versionSelect = $('#versions');
     const $list = $('#files');
+    const $progress = $('#replacement-progress');
 
     let listCache = {};
     let listChecks = [];
@@ -38,14 +41,67 @@
 
     $list.data('ignorance', ignorance);
 
+    const invalidClassified = [
+        '.has-null',
+        '.has-export-error',
+        '.version-mismatch',
+        '.verified-error',
+    ].join(', ');
+
+    const definedClassified = [
+        '.is-defined',
+        '.is-ignored',
+    ].join(', ');
+
+    const checkCoverage = () => {
+        const $entries = $list.find('.list-entry');
+        const totalEntries = $entries.length;
+
+        let definedEntries = 0;
+
+        $entries.each(function () {
+            const $entry = $(this);
+
+            if (!$entry.is(invalidClassified)) {
+                if ($entry.is(definedClassified)) {
+                    definedEntries += 1;
+                }
+            }
+        });
+
+        const percentFinished = (definedEntries / totalEntries) * 100;
+
+        $progress
+            .find('.bar')
+            .css('width', `${percentFinished}%`)
+            .end()
+            .find('.content strong')
+            .text(`${percentFinished.toFixed(1)}%`);
+    };
+
     const checkListEntry = () => {
-        if (listChecks.length > 0) {
-            const $entry = listChecks.pop();
+        const entriesLeftToCheck = listChecks.length > 0;
+
+        $progress.toggleClass('validating', entriesLeftToCheck);
+
+        if (entriesLeftToCheck) {
+            const $entry = listChecks.shift();
             const properties = $entry.prop('zip');
+
+            const ignored = Boolean(ignorance.get(properties.entry.entryName));
+
+            if (!ignored) {
+                const entryVersion = versions.get(properties.entry.entryName);
+                const versionsMatch = entryVersion === currentVersion;
+
+                $entry.toggleClass('version-mismatch', !versionsMatch);
+            }
 
             if (properties.editor.hasOwnProperty('verifyListEntry')) {
                 properties.editor.verifyListEntry(properties, $entry);
             }
+
+            checkCoverage();
         }
 
         requestAnimationFrame(checkListEntry);
@@ -55,9 +111,6 @@
 
     const refreshList = () => {
         const $entries = $list.find('.list-entry');
-        const totalEntries = $entries.length;
-
-        let definedEntries = 0;
 
         listChecks = [];
 
@@ -71,21 +124,10 @@
 
             $entry.toggleClass('is-ignored', ignored);
 
-            if ($entry.is('.is-defined, .is-ignored')) {
-                definedEntries += 1;
-            }
-
             listChecks.push($entry);
         });
 
-        const percentFinished = (definedEntries / totalEntries) * 100;
-
-        $('#replacement-progress')
-            .find('.bar')
-            .css('width', `${percentFinished}%`)
-            .end()
-            .find('.content strong')
-            .text(`${percentFinished.toFixed(1)}%`);
+        checkCoverage();
     };
 
     const includesQuery = (zip) =>
@@ -134,6 +176,8 @@
             if (!value) {
                 return;
             }
+
+            currentVersion = value.replace('versions/', '').replace('.jar', '');
 
             // TODO: Make this asynchronous
             const zip = new Zip(value);
@@ -225,6 +269,8 @@
 
         return false;
     });
+
+    window.getSelectedVersion = () => currentVersion;
 
     window.getListEntry = (name) => listCache[name];
 }

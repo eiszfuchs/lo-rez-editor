@@ -7,6 +7,7 @@ const doT = require('dot');
 
 const Library = require('../library');
 const library = new Library('lo-rez/textures.jsonl');
+const versions = new Library('lo-rez/versions.jsonl');
 
 require('../organizer')('texture').set(library);
 
@@ -352,7 +353,9 @@ const Editor = function (paneManager, zip) {
             editorWidth, editorHeight);
 
         // Is the texture's height a multiple of its width?
-        if ((editorHeight > editorWidth) && (editorHeight % editorWidth === 0)) {
+        if (
+            (editorHeight > editorWidth) && (editorHeight % editorWidth === 0)
+        ) {
             textureEditor.setFrameHeight(editorWidth);
 
             $source.parent().css({
@@ -451,7 +454,8 @@ const Editor = function (paneManager, zip) {
     };
 
     const playFrame = () => {
-        let frameIndex = parseInt($frames.find('.active').attr('data-frame'), 10);
+        const frameIndexData = $frames.find('.active').attr('data-frame');
+        let frameIndex = parseInt(frameIndexData, 10);
 
         frameIndex = (frameIndex + 1) % frameCount;
         activateFrameIndex(frameIndex);
@@ -715,6 +719,7 @@ const Editor = function (paneManager, zip) {
     self.save = function () {
         $save.addClass('is-loading');
 
+        versions.set(zip.entry.entryName, window.getSelectedVersion());
         library.set(zip.entry.entryName, textureEditor.pixels(), () => {
             $save.removeClass('is-loading');
 
