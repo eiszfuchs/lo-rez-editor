@@ -79,6 +79,26 @@
             .text(`${percentFinished.toFixed(1)}%`);
     };
 
+    const isPre14 = (version) => {
+        const [major, minor] = version.split('.');
+
+        return parseInt(major, 10) === 1 && parseInt(minor, 10) <= 13;
+    };
+
+    const isCompatible = (checkVersion, targetVersion) => {
+        if (!checkVersion) {
+            return false;
+        }
+
+        /* The major texture update happened with 1.14, so the jump towards
+         * this version is everything we need to care about, at least for now.
+         */
+        const checkIsPre14 = isPre14(checkVersion);
+        const targetIsPre14 = isPre14(targetVersion);
+
+        return checkIsPre14 === targetIsPre14;
+    };
+
     const checkListEntry = () => {
         const entriesLeftToCheck = listChecks.length > 0;
 
@@ -90,15 +110,17 @@
 
             const ignored = Boolean(ignorance.get(properties.entry.entryName));
 
-            if (!ignored) {
-                const entryVersion = versions.get(properties.entry.entryName);
-                const versionsMatch = entryVersion === currentVersion;
-
-                $entry.toggleClass('version-mismatch', !versionsMatch);
-            }
-
             if (properties.editor.hasOwnProperty('verifyListEntry')) {
                 properties.editor.verifyListEntry(properties, $entry);
+            }
+
+            const defined = $entry.is('.is-defined');
+
+            if (!ignored && defined) {
+                const entryVersion = versions.get(properties.entry.entryName);
+                const versionsMatch = isCompatible(entryVersion, currentVersion);
+
+                $entry.toggleClass('version-mismatch', !versionsMatch);
             }
 
             checkCoverage();
