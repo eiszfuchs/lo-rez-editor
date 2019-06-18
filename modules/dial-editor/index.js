@@ -5,6 +5,7 @@ const doT = require('dot');
 
 const Library = require('../library');
 const library = new Library('lo-rez/dials.jsonl');
+const versions = require('../organizer')('versions').get();
 
 const Painter = require('../painter');
 const Palette = require('../palette');
@@ -168,6 +169,8 @@ const Editor = function (paneManager, zip) {
         const dialPixels = dialEditor.pixels();
         const maskPixels = maskEditor.pixels();
         const overlayPixels = overlayEditor.pixels();
+
+        versions.set(`${assetName}00.png`, window.getSelectedVersion());
 
         library.set(`${assetName}dial.png`, dialPixels, () => {
             library.set(`${assetName}mask.png`, maskPixels, () => {

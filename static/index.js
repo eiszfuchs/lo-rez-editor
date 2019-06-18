@@ -6,6 +6,7 @@
     const Zip = require('adm-zip');
 
     const ZipOrganizer = require('../modules/organizer')('zip');
+    const VersionsOrganizer = require('../modules/organizer')('versions');
     const PaneOrganizer = require('../modules/window-manager');
 
     const Library = require('../modules/library');
@@ -13,6 +14,8 @@
     const ignorance = new Library('lo-rez/ignorance.jsonl', {
         cleanup: (value) => value,
     });
+
+    VersionsOrganizer.set(versions);
 
     const Editors = [];
 

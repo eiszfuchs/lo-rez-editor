@@ -10,6 +10,7 @@ const prettier = require('prettier');
 
 const Library = require('../library');
 const library = new Library('lo-rez/models.jsonl');
+const versions = require('../organizer')('versions').get();
 
 require('../organizer')('model').set(library);
 
@@ -188,6 +189,7 @@ const Editor = function (paneManager, zip) {
         const $saveButton = $jsonEditor.find('.js-save');
 
         $saveButton.on('click', () => {
+            versions.set(modelName, window.getSelectedVersion());
             library.set(modelName, editor.getValue(), () => {
                 $jsonEditor.removeClass('changed');
 

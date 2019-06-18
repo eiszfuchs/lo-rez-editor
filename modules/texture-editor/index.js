@@ -7,7 +7,7 @@ const doT = require('dot');
 
 const Library = require('../library');
 const library = new Library('lo-rez/textures.jsonl');
-const versions = new Library('lo-rez/versions.jsonl');
+const versions = require('../organizer')('versions').get();
 
 require('../organizer')('texture').set(library);
 
