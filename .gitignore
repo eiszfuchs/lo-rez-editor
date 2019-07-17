@@ -8,7 +8,6 @@ versions/*
 !versions/*.md
 
 pnpm-lock.y*ml
-package-lock.json
 yarn.lock
 
 
