@@ -51,35 +51,55 @@
         '.verified-error',
     ].join(', ');
 
+    const ignoredClassified = [
+        '.is-ignored',
+    ].join(', ');
+
     const definedClassified = [
         '.is-defined',
-        '.is-ignored',
     ].join(', ');
 
     const checkCoverage = () => {
         const $entries = $list.find('.list-entry');
         const totalEntries = $entries.length;
 
+        let ignoredEntries = 0;
         let definedEntries = 0;
+        let invalidEntries = 0;
 
         $entries.each(function () {
             const $entry = $(this);
 
             if (!$entry.is(invalidClassified)) {
-                if ($entry.is(definedClassified)) {
+                if ($entry.is(ignoredClassified)) {
+                    ignoredEntries += 1;
+                } else if ($entry.is(definedClassified)) {
                     definedEntries += 1;
                 }
+            } else {
+                invalidEntries += 1;
             }
         });
 
+        const percentIgnored = (ignoredEntries / totalEntries) * 100;
         const percentFinished = (definedEntries / totalEntries) * 100;
+        const percentInvalid = (invalidEntries / totalEntries) * 100;
 
         $progress
-            .find('.bar')
-            .css('width', `${percentFinished}%`)
-            .end()
+            .find('.bar.ignored')
+            .css('width', `${percentIgnored}%`);
+
+        $progress
+            .find('.bar.finished')
+            .css('width', `${percentFinished}%`);
+
+        $progress
+            .find('.bar.invalid')
+            .css('width', `${percentInvalid}%`);
+
+        $progress
             .find('.content strong')
-            .text(`${percentFinished.toFixed(1)}%`);
+            .text(`${(percentIgnored + percentFinished).toFixed(1)}%`);
     };
 
     const isPre14 = (version) => {

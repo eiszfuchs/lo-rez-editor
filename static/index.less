@@ -160,13 +160,29 @@ aside {
 #replacement-progress {
     position: relative;
 
-    .bar {
+    .bars {
+        display: flex;
+
         position: absolute;
         top: 0;
         left: 0;
-        bottom: 0;
-        z-index: 0;
-        background-color: fadeout(@gray, 80%);
+
+        width: 100%;
+        height: 100%;
+    }
+
+    .bar {
+        &.ignored {
+            background-color: fadeout(@gray, 90%);
+        }
+
+        &.finished {
+            background-color: fadeout(@gray, 70%);
+        }
+
+        &.invalid {
+            background-color: fadeout(@red, 60%);
+        }
     }
 
     .content {
