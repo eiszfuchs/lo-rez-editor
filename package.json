@@ -7,7 +7,7 @@
     "start": "electron ."
   },
   "devDependencies": {
-    "electron": "6.0.0"
+    "electron": "5.0.8"
   },
   "dependencies": {
     "ace-builds": "1.4.5",
