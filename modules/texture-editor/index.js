@@ -76,8 +76,13 @@ const editorTemplate = doT.template(`<div>
     </div>
 
     <div class="horizontal segments previews">
-        <div class="preview source"></div>
-        <div class="preview editor"></div>
+        <div class="preview source">
+            <div class="overlay texture-grid"></div>
+        </div>
+
+        <div class="preview editor">
+            <div class="overlay texture-grid"></div>
+        </div>
     </div>
 
     <div class="ui-row">
@@ -538,6 +543,26 @@ const Editor = function (paneManager, zip) {
         return false;
     });
 
+    $previews.on('mousemove', function ({offsetX, offsetY}) {
+        const previewWidth = $(this).width();
+        const previewHeight = $(this).height();
+
+        const scale = 8 * editorPreviewScale;
+
+        const gridX = offsetX - (previewWidth / 2) + (scale / 2);
+        const gridY = offsetY - (previewHeight / 2) + (scale / 2);
+
+        const choppedX = Math.floor(gridX / scale) * scale;
+        const choppedY = Math.floor(gridY / scale) * scale;
+
+        $previews.find('.overlay').css({
+            width: `${scale}px`,
+            height: `${scale}px`,
+            left: `${(previewWidth / 2) - (scale / 2) + choppedX}px`,
+            top: `${(previewHeight / 2) - (scale / 2) + choppedY}px`,
+        });
+    });
+
     const documentKeyPress = function (event) {
         if (event.which === matchKey('-')) {
             return setViewSplit($('.split-view hr'), lastSplit === 0 ? 1 : 0);
@@ -806,6 +831,7 @@ const Editor = function (paneManager, zip) {
     self.destroy = () => {
         $source.off();
         $palette.find('li').off();
+        $previews.off();
         $editor.off();
         $save.off();
         $recover.off();
