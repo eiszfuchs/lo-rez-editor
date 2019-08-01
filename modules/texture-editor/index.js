@@ -484,6 +484,8 @@ const Editor = function (paneManager, zip) {
         });
 
         lastSplit = Math.round(finalSplit);
+
+        return false;
     };
 
     $pane.find('.split-view hr').each(function () {
@@ -537,25 +539,16 @@ const Editor = function (paneManager, zip) {
     });
 
     const documentKeyPress = function (event) {
-        // Minus
-        if (event.which === 45) {
-            setViewSplit($('.split-view hr'), lastSplit === 0 ? 1 : 0);
-
-            return false;
+        if (event.which === matchKey('-')) {
+            return setViewSplit($('.split-view hr'), lastSplit === 0 ? 1 : 0);
         }
 
-        // Q
         if (event.which === matchKey('q')) {
-            setViewSplit($('.split-view hr'), 0);
-
-            return false;
+            return setViewSplit($('.split-view hr'), 0);
         }
 
-        // E
         if (event.which === matchKey('e')) {
-            setViewSplit($('.split-view hr'), 1);
-
-            return false;
+            return setViewSplit($('.split-view hr'), 1);
         }
 
         // Space
