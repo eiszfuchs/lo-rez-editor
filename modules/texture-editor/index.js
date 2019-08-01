@@ -544,6 +544,20 @@ const Editor = function (paneManager, zip) {
             return false;
         }
 
+        // Q
+        if (event.which === matchKey('q')) {
+            setViewSplit($('.split-view hr'), 0);
+
+            return false;
+        }
+
+        // E
+        if (event.which === matchKey('e')) {
+            setViewSplit($('.split-view hr'), 1);
+
+            return false;
+        }
+
         // Space
         if (event.which === 32) {
             playing = !playing;
