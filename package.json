@@ -7,21 +7,21 @@
     "start": "electron ."
   },
   "devDependencies": {
-    "electron": "5.0.8"
+    "electron": "^5.0"
   },
   "dependencies": {
-    "ace-builds": "1.4.5",
-    "adm-zip": "0.4.13",
-    "bulma": "0.7.5",
-    "c-p": "1.4.2",
-    "deep-extend": "0.6.0",
-    "dot": "1.1.2",
-    "font-awesome": "4.7.0",
-    "glob": "7.1.4",
-    "jquery": "3.4.1",
-    "less": "3.9.0",
-    "lodash": "4.17.15",
-    "prettier": "1.18.2",
-    "three": "0.107.0"
+    "ace-builds": "^1.4",
+    "adm-zip": "^0.4",
+    "bulma": "^0.7",
+    "c-p": "^1.4",
+    "deep-extend": "^0.6",
+    "dot": "^1.1",
+    "font-awesome": "^4.7",
+    "glob": "^7.1",
+    "jquery": "^3.4",
+    "less": "^3.9",
+    "lodash": "^4.17",
+    "prettier": "^1.18",
+    "three": "^0.107"
   }
 }
