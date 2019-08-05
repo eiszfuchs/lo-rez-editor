@@ -489,8 +489,6 @@ const Editor = function (paneManager, zip) {
         });
 
         lastSplit = Math.round(finalSplit);
-
-        return false;
     };
 
     $pane.find('.split-view hr').each(function () {
@@ -583,8 +581,6 @@ const Editor = function (paneManager, zip) {
             if (playing) {
                 playFrame();
             }
-
-            return false;
         }
     };
 
