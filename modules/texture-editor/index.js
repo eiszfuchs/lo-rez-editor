@@ -80,6 +80,13 @@ const editorTemplate = doT.template(`<div>
             <div class="overlay texture-grid"></div>
         </div>
 
+        <div
+            class="preview exported"
+            style="display: none; background-image: url(../{{=it.exported}});"
+        >
+            <div class="overlay texture-grid"></div>
+        </div>
+
         <div class="preview editor">
             <div class="overlay texture-grid"></div>
         </div>
@@ -487,6 +494,9 @@ const Editor = function (paneManager, zip) {
         $start.css({
             width: `${finalSplit * 100}%`,
         });
+
+        $previews.filter('.exported').toggle(finalSplit > 0.5);
+        $previews.filter('.editor').toggle(finalSplit <= 0.5);
 
         lastSplit = Math.round(finalSplit);
     };
