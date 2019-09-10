@@ -150,6 +150,16 @@ const PixelPanel = function ($editor, scale, width, height) {
         });
     };
 
+    self.highlightPixel = (x = null, y = null) => {
+        $editor.find('.cell').removeClass('highlighted');
+
+        if (x === null || y === null) {
+            return;
+        }
+
+        getEditorCell(x, y).addClass('highlighted');
+    };
+
     const fillNode = function (x, y, color, visited = []) {
         const $fillCell = getEditorCell(x, y);
 

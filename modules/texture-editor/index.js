@@ -273,7 +273,19 @@ const Editor = function (paneManager, zip) {
         }
     });
 
-    $source.on('mousemove', function (event) {
+    const sourceDraw = (event) => {
+        const x = Math.floor(event.offsetX / viewScale);
+        const y = Math.floor(event.offsetY / viewScale);
+
+        const tx = Math.floor(x / targetDivider);
+        const ty = Math.floor(y / targetDivider);
+
+        const detected = getPaletteIndex(getColorsAt(x, y, 1, 1)[0]);
+
+        textureEditor.setPixel(tx, ty, detected);
+    };
+
+    $source.on('mousemove', (event) => {
         if (!context) {
             return;
         }
@@ -281,13 +293,34 @@ const Editor = function (paneManager, zip) {
         const x = Math.floor(event.offsetX / viewScale);
         const y = Math.floor(event.offsetY / viewScale);
 
+        const tx = Math.floor(x / targetDivider);
+        const ty = Math.floor(y / targetDivider);
+
         const detected = _.map(getColorsAt(x, y, 1, 1), (d) => d.hex());
 
         highlightColors(detected);
+        textureEditor.highlightPixel(tx, ty);
     });
 
-    $source.on('mouseleave', function () {
+    $source.on('mouseleave', () => {
         $palette.find('li').removeClass('picked').removeAttr('data-hotkey');
+        textureEditor.highlightPixel();
+    });
+
+    $source.on('mousedown', (event) => {
+        if (!context) {
+            return;
+        }
+
+        $source.on('mousemove', sourceDraw);
+        $source.on('mouseup', () => {
+            $source.off('mousemove', sourceDraw);
+            $source.off('mouseup');
+        });
+
+        sourceDraw(event);
+
+        event.preventDefault();
     });
 
     $pane.attr('data-transparency', 'a');
