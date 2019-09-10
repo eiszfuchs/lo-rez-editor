@@ -19,9 +19,9 @@
     "font-awesome": "^4.7",
     "glob": "^7.1",
     "jquery": "^3.4",
-    "less": "^3.9",
+    "less": "^3.10",
     "lodash": "^4.17",
     "prettier": "^1.18",
-    "three": "^0.107"
+    "three": "^0.108"
   }
 }
