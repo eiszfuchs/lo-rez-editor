@@ -155,6 +155,15 @@ aside {
             }
         }
     }
+
+    .is-horizontal {
+        .control {
+            + .control {
+                margin-top: inherit;
+                margin-left: 12px;
+            }
+        }
+    }
 }
 
 #replacement-progress {
@@ -437,6 +446,21 @@ form {
 
     &.hide-ignored {
         .is-ignored {
+            display: none;
+        }
+    }
+
+    &.hide-finished {
+        .is-defined:not(.has-null):not(.has-export-error):not(.version-mismatch):not(.verified-error) {
+            display: none;
+        }
+    }
+
+    &.hide-invalid {
+        .has-null,
+        .has-export-error,
+        .version-mismatch,
+        .verified-error {
             display: none;
         }
     }

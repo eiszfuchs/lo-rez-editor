@@ -40,7 +40,9 @@
     let listChecks = [];
 
     const $filter = $('#filter');
-    const $ignoranceFilter = $('#ignorance-filter');
+    const $ignoredFilter = $('#filter-ignored');
+    const $finishedFilter = $('#filter-finished');
+    const $invalidFilter = $('#filter-invalid');
 
     $list.data('ignorance', ignorance);
 
@@ -186,7 +188,9 @@
             queries[queries.indexOf('grey')] = 'gray';
         }
 
-        $list.toggleClass('hide-ignored', !$ignoranceFilter.prop('checked'));
+        $list.toggleClass('hide-ignored', !$ignoredFilter.prop('checked'));
+        $list.toggleClass('hide-finished', !$finishedFilter.prop('checked'));
+        $list.toggleClass('hide-invalid', !$invalidFilter.prop('checked'));
 
         $list.find('li').each(function () {
             const $item = $(this);
@@ -291,7 +295,13 @@
     $filter
         .on('keyup', _.debounce(filterList, 100));
 
-    $ignoranceFilter
+    $ignoredFilter
+        .on('change', _.debounce(filterList, 100));
+
+    $finishedFilter
+        .on('change', _.debounce(filterList, 100));
+
+    $invalidFilter
         .on('change', _.debounce(filterList, 100));
 
     const $export = $('#export');
