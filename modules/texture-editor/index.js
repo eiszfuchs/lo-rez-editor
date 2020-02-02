@@ -888,7 +888,7 @@ Editor.applies = (entry) => {
 
     if (window.GlobalValues.packFormat === 3) {
         appliesExpression = /textures\/(blocks|items).*\.png$/;
-    } else if (window.GlobalValues.packFormat === 4) {
+    } else if ([4, 5].indexOf(window.GlobalValues.packFormat) > -1) {
         appliesExpression = /textures\/(block|item).*\.png$/;
     }
 
